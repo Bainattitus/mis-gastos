@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#f2f3f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0c0e12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2a5fe0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16191f" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mis gastos">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
@@ -22,6 +22,10 @@
   --ok: #15803d; --ok-soft: #e5f3ea; --bad: #c0392b; --bad-soft: #fbeae7; --warn: #8a5200; --warn-soft: #fff1d6;
   --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 14px rgba(16, 24, 40, .05);
   --radius: 18px;
+  /* Cabecera: azul con letras blancas en modo claro, para que la hora del iPhone se lea encima. */
+  --arriba: #2a5fe0; --arriba-fin: #2550cc; --arriba-texto: #ffffff; --arriba-suave: rgba(255, 255, 255, .8);
+  --arriba-boton: rgba(255, 255, 255, .18); --arriba-pista: rgba(0, 0, 0, .16);
+  --arriba-activo: #ffffff; --arriba-activo-texto: #2a5fe0;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -29,6 +33,8 @@
     --accent: #6f9cff; --accent-text: #0c0e12; --accent-soft: #1a2540;
     --ok: #4cc985; --ok-soft: #14291d; --bad: #ff7b6b; --bad-soft: #3a1e1a; --warn: #ffbe5c; --warn-soft: #33270f;
     --shadow: none;
+    --arriba: #16191f; --arriba-fin: #16191f; --arriba-texto: #eceef2; --arriba-suave: #9aa1ad;
+    --arriba-boton: #242830; --arriba-pista: #242830; --arriba-activo: #353b46; --arriba-activo-texto: #eceef2;
   }
 }
 :root[data-theme="dark"] {
@@ -36,6 +42,8 @@
   --accent: #6f9cff; --accent-text: #0c0e12; --accent-soft: #1a2540;
   --ok: #4cc985; --ok-soft: #14291d; --bad: #ff7b6b; --bad-soft: #3a1e1a; --warn: #ffbe5c; --warn-soft: #33270f;
   --shadow: none;
+  --arriba: #16191f; --arriba-fin: #16191f; --arriba-texto: #eceef2; --arriba-suave: #9aa1ad;
+  --arriba-boton: #242830; --arriba-pista: #242830; --arriba-activo: #353b46; --arriba-activo-texto: #eceef2;
 }
 [hidden] { display: none !important; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -52,7 +60,19 @@ body {
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.app { max-width: 480px; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 16px 0; transition: opacity .2s; }
+.app { max-width: 480px; margin: 0 auto; padding: 0 16px; transition: opacity .2s; }
+.barra-estado { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--arriba); z-index: 9; pointer-events: none; }
+.arriba {
+  margin: 0 -16px 12px; padding: calc(10px + env(safe-area-inset-top)) 16px 14px; border-radius: 0 0 24px 24px;
+  background: linear-gradient(180deg, var(--arriba), var(--arriba-fin)); color: var(--arriba-texto);
+}
+.arriba .cabecera h1, .arriba .icono { color: var(--arriba-suave); }
+.arriba .icono:active { background: var(--arriba-boton); }
+.arriba .flecha { background: var(--arriba-boton); box-shadow: none; color: var(--arriba-texto); }
+.arriba .segmentado { background: var(--arriba-pista); margin: 0; }
+.arriba .segmentado button { color: var(--arriba-suave); }
+.arriba .segmentado button.activa { background: var(--arriba-activo); color: var(--arriba-activo-texto); }
+.arriba:has(.segmentado[hidden]) .selector { margin-bottom: 0; }
 .app.cargando { opacity: .55; }
 .cabecera { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 0; }
 .cabecera h1 { font-size: 15px; font-weight: 600; color: var(--muted); margin: 0; }
@@ -170,6 +190,7 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
 </style>
 </head>
 <body>
+<div class="barra-estado" aria-hidden="true"></div>
 <div class="conectar" id="conectar" hidden>
   <img class="logo" src="icono-180.png" alt="">
   <h1>Conecta tu hoja</h1>
@@ -180,6 +201,7 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
 </div>
 
 <div class="app" id="app" hidden>
+  <header class="arriba">
   <div class="cabecera">
     <h1>Mis gastos</h1>
     <button class="icono" id="recargar" aria-label="Actualizar">
@@ -198,6 +220,7 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
     <button data-vista="conjunta">👫 Conjunta</button>
     <button data-vista="todo">Todo</button>
   </div>
+  </header>
 
   <section class="tarjeta instalar" id="instalar" hidden>
     <span class="medio" id="instalar-texto"></span>
