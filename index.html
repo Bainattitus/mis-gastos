@@ -39,7 +39,12 @@
 }
 [hidden] { display: none !important; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; background: var(--bg); color: var(--text); }
+html, body { margin: 0; background: var(--bg); color: var(--text); overscroll-behavior-y: none; }
+html { -webkit-text-size-adjust: 100%; }
+button, .fila, .opcion, .cabecera, .selector, .segmentado, .columnas, .boton-flotante, .asa, h1, h2, .etq, .s, .t {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+button, a, input { touch-action: manipulation; }
 body {
   font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -152,7 +157,7 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
 .conectar .logo { width: 72px; height: 72px; border-radius: 18px; display: block; margin: 0 0 18px; }
 .conectar h1 { font-size: 27px; margin: 0 0 8px; letter-spacing: -.01em; }
 .conectar p { color: var(--muted); margin: 0 0 14px; }
-.conectar .entrada { font-size: 15px; }
+.conectar .entrada { font-size: 16px; }
 .conectar .error { color: var(--bad); font-size: 14px; font-weight: 600; min-height: 20px; margin: 10px 0 0; }
 .instalar { display: flex; gap: 12px; align-items: flex-start; }
 .instalar .medio { font-size: 14px; color: var(--muted); }
@@ -394,7 +399,9 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
     return d.vistas[est.vista];
   }
 
+  var ultimaCarga = 0;
   function cargar() {
+    ultimaCarga = Date.now();
     $('app').classList.add('cargando');
     return API.datos(est.mes).then(function (d) {
       if (!d || !d.ok) throw new Error((d && d.error) || 'sin datos');
@@ -1017,6 +1024,10 @@ h2 small { font-size: 13px; font-weight: 500; color: var(--muted); }
     document.head.appendChild(s);
   }
 
+  // Al volver a la app (por ejemplo, después de pagar), trae lo último si han pasado más de 20 segundos.
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && (conexion || window.API_PRUEBA) && !$('app').hidden && Date.now() - ultimaCarga > 20000) cargar();
+  });
   $('conectar-boton').onclick = conectar;
   $('conectar-enlace').addEventListener('keydown', function (e) { if (e.key === 'Enter') conectar(); });
   $('instalar-cerrar').onclick = function () {
