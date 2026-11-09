@@ -1,6 +1,6 @@
 {
-  "name": "Mis gastos",
-  "short_name": "Mis gastos",
+  "name": "ByCash",
+  "short_name": "ByCash",
   "lang": "es",
   "display": "standalone",
   "scope": "./",
