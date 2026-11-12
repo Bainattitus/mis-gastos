@@ -4,10 +4,10 @@
   "lang": "es",
   "display": "standalone",
   "scope": "./",
-  "background_color": "#0c0e12",
-  "theme_color": "#2a5fe0",
+  "background_color": "#111214",
+  "theme_color": "#14329b",
   "icons": [
-    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icono-192.png?v=4", "sizes": "192x192", "type": "image/png" },
+    { "src": "icono-512.png?v=4", "sizes": "512x512", "type": "image/png" }
   ]
 }
