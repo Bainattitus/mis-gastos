@@ -229,6 +229,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent-texto); 
 .botones-arriba { display: flex; gap: 6px; }
 .icono { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--billete-boton); color: var(--billete-ink); }
 .icono:active, .flecha:active { transform: scale(.92); }
+.girando svg { animation: girar .9s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
 .mes { display: flex; align-items: center; gap: 8px; margin: 8px 0 16px; }
 .mes .nombre { flex: 1; text-align: center; font-family: var(--f-titulo); font-size: 18px; font-weight: 650; letter-spacing: -.01em; }
 .mes .nombre::first-letter { text-transform: uppercase; }
@@ -270,6 +272,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .fila { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 0; border-top: 1px solid var(--line); transition: transform .45s ease, opacity .2s; }
 .lista > .fila:first-child { border-top: 0; }
 .fila.apretando { transform: scale(.965); }
+.fila.quitando { height: 0 !important; padding-top: 0; padding-bottom: 0; opacity: 0; overflow: hidden; border-top-color: transparent; transition: height .25s ease, padding .25s ease, opacity .18s; }
 .ficha { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; flex: none; background: var(--track); background: color-mix(in srgb, var(--c, var(--resto)) 18%, var(--card)); }
 .ficha.grande { width: 52px; height: 52px; border-radius: 17px; font-size: 26px; background: color-mix(in srgb, var(--c, var(--resto)) 22%, var(--papel)); }
 .puesto { width: 30px; height: 30px; border-radius: 10px; background: var(--track); display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--muted); flex: none; font-family: var(--f-cifra); }
@@ -666,8 +669,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 <script>
 (function () {
   'use strict';
-  // Súbela en cada cambio: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.4';
+  // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
+  var VERSION = '4.5';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1042,19 +1045,57 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   }
   function todo() { return est.datos.vistas.todo || est.datos.vistas.mio; }
 
-  var ultimaCarga = 0;
-  function cargar() {
+  // ── Rapidez: se enseña al momento lo último que se vio y lo nuevo de la hoja llega por detrás ──
+  // Los meses vistos se guardan en memoria; el mes en curso, también en el móvil, para abrir la app al instante.
+  var memoria = {};
+  var GUARDADO_DATOS = 'bycash-datos';
+  function leerGuardado(mes) {
+    if (memoria[mes]) return memoria[mes];
+    if (mes !== mesDeHoy() || !conexion) return null;
+    try {
+      var o = JSON.parse(window.localStorage.getItem(GUARDADO_DATOS) || 'null');
+      return o && o.mes === mes && o.u === conexion.u && o.d && o.d.ok ? o.d : null;
+    } catch (e) { return null; }
+  }
+  function guardarDatos(mes, d) {
+    memoria[mes] = d;
+    if (mes !== mesDeHoy() || !conexion) return;
+    try { window.localStorage.setItem(GUARDADO_DATOS, JSON.stringify({ mes: mes, u: conexion.u, d: d })); } catch (e) { return; }
+  }
+
+  var ultimaCarga = 0, cargaActual = 0;
+  // «tras un cambio» (borrar, editar…): lo guardado ya no vale, así que no se enseña y se pide a la hoja.
+  function cargar(trasUnCambio) {
+    var mes = est.mes, n = ++cargaActual;
     ultimaCarga = Date.now();
-    $('app').classList.add('cargando');
-    return API.datos(est.mes).then(function (d) {
+    if (trasUnCambio) delete memoria[mes];
+    var guardado = trasUnCambio ? null : leerGuardado(mes);
+    if (guardado && (!est.datos || est.datos.mes !== mes)) {
+      est.datos = guardado;
+      asignarColores();
+      pintar();
+    }
+    // Solo se atenúa si lo que se ve es de otro mes y aún no hay nada del nuevo.
+    $('app').classList.toggle('cargando', !!est.datos && est.datos.mes !== mes);
+    $('recargar').classList.add('girando');
+    return API.datos(mes).then(function (d) {
+      if (n !== cargaActual) return;
       if (!d || !d.ok) throw new Error((d && d.error) || 'sin datos');
+      var igual = est.datos && est.datos.mes === mes && JSON.stringify(est.datos) === JSON.stringify(d);
+      guardarDatos(mes, d);
+      if (igual || est.mes !== mes) return;
       est.datos = d;
       asignarColores();
       pintar();
     }).catch(function (e) {
+      if (n !== cargaActual) return;
       avisar(esError(e && e.message) ? e.message : 'No se pudo cargar. Comprueba la conexión.');
       if (window.console) console.error(e);
-    }).then(function () { $('app').classList.remove('cargando'); });
+    }).then(function () {
+      if (n !== cargaActual) return;
+      $('app').classList.remove('cargando');
+      $('recargar').classList.remove('girando');
+    });
   }
 
   function irAMes(mes) {
@@ -1644,13 +1685,28 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   }
 
   // ── Menús al mantener pulsado ──
-  function despues(promesa, siFalla) {
+  function despues(promesa, siFalla, alFallar) {
     promesa.then(function (r) {
       if (esError(r)) throw new Error(r);
       cerrarHoja();
       avisar(r);
-      cargar();
-    }).catch(function (e) { avisar(esError(e && e.message) ? e.message : siFalla); });
+      cargar(true);
+    }).catch(function (e) {
+      if (alFallar) alFallar();
+      avisar(esError(e && e.message) ? e.message : siFalla);
+    });
+  }
+  // Al borrar, la fila se pliega al momento; si la hoja dice que no, vuelve a salir.
+  function plegar(fila) {
+    if (!fila || !fila.isConnected) return;
+    fila.style.height = fila.offsetHeight + 'px';
+    void fila.offsetHeight;
+    fila.classList.add('quitando');
+  }
+  function desplegar(fila) {
+    if (!fila) return;
+    fila.classList.remove('quitando');
+    fila.style.height = '';
   }
   function itemCuenta(x) {
     var conjunta = x.cuenta === CONJUNTA;
@@ -1659,10 +1715,13 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       hacer: function () { despues(API.cuenta(x.id, conjunta ? 'Personal' : CONJUNTA), 'No se pudo cambiar. Inténtalo otra vez.'); }
     };
   }
-  function itemBorrar(id, texto) {
+  function itemBorrar(id, texto, fila) {
     return {
       icono: 'borrar', texto: texto, peligro: true, confirmar: 'Toca otra vez para borrar',
-      hacer: function () { despues(API.borrar(id), 'No se pudo borrar. Inténtalo otra vez.'); }
+      hacer: function () {
+        plegar(fila);
+        despues(API.borrar(id), 'No se pudo borrar. Inténtalo otra vez.', function () { desplegar(fila); });
+      }
     };
   }
   function menuGasto(g, fila, pulsado) {
@@ -1678,7 +1737,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       items.push({ icono: 'repetir', texto: 'Repetir cada mes', hacer: function () { despues(API.repetir(g.id, 'mes'), 'No se pudo guardar. Inténtalo otra vez.'); } });
     }
     items.push({ icono: 'buscar', texto: 'Ver todos los de «' + g.comercio + '»', hacer: function () { verMovimientos({ campo: 'comercio', valor: g.comercio }, 'todo'); } });
-    items.push(itemBorrar(g.id, 'Borrar este gasto'));
+    items.push(itemBorrar(g.id, 'Borrar este gasto', fila));
     abrirMenu(fila, items, function () { abrirDetalle(g); }, pulsado);
   }
   function menuIngreso(i, fila, pulsado) {
@@ -1689,7 +1748,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     ];
     if (est.datos.hayConjunta || i.cuenta === CONJUNTA) items.push(itemCuenta(i));
     items.push({ icono: 'buscar', texto: 'Ver todos los de «' + i.de + '»', hacer: function () { verMovimientos({ campo: 'comercio', valor: i.de }, 'todo'); } });
-    items.push(itemBorrar(i.id, 'Borrar esta entrada'));
+    items.push(itemBorrar(i.id, 'Borrar esta entrada', fila));
     abrirMenu(fila, items, function () { abrirDetalleIngreso(i); }, pulsado);
   }
   function menuFijo(f, tile, pulsado) {
@@ -1770,7 +1829,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
         cerrarHoja();
         avisar(r);
         if (irAHoy && est.mes !== mesDeHoy()) est.mes = mesDeHoy();
-        cargar();
+        cargar(true);
       }).catch(function (e) {
         b.disabled = false;
         b.textContent = 'Guardar';
@@ -1794,7 +1853,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
         if (esError(r)) throw new Error(r);
         cerrarHoja();
         avisar(r);
-        cargar();
+        cargar(true);
       }).catch(function (e) {
         b.disabled = false;
         avisar(esError(e && e.message) ? e.message : siFalla);
@@ -2179,6 +2238,9 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     arrancar();
   }
   function desconectar() {
+    memoria = {};
+    est.datos = null;
+    try { window.localStorage.removeItem(GUARDADO_DATOS); } catch (e) { memoria = {}; }
     try { window.localStorage.removeItem(GUARDADA); } catch (e) { conexion = null; }
     conexion = null;
     history.replaceState(null, '', location.pathname);
@@ -2241,11 +2303,11 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   // y, si la hay, se recarga. Como mucho una vez por minuto, para no quedarse recargando si el móvil insiste en la vieja.
   function buscarVersionNueva() {
     if (window.API_PRUEBA || !window.fetch) return;
-    fetch(location.pathname + '?version=' + Date.now(), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.text() : ''; })
-      .then(function (texto) {
-        var m = texto.match(/var VERSION = '([^']+)'/);
-        if (!m || m[1] === VERSION) return;
+    // version.json pesa unos bytes: así no se descarga la página entera para saberlo.
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.version || j.version === VERSION) return;
         var antes = 0;
         try { antes = +window.sessionStorage.getItem('bycash-recarga') || 0; } catch (e) { antes = 0; }
         if (Date.now() - antes < 60000) { avisar('Hay una versión nueva: cierra la app del todo y ábrela otra vez.'); return; }
