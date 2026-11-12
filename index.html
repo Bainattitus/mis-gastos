@@ -413,15 +413,29 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .velo.abierto { opacity: 1; pointer-events: auto; }
 .hoja {
   position: fixed; left: 0; right: 0; bottom: 0; max-width: 520px; margin: 0 auto; background: var(--card); z-index: 21;
-  border-radius: 28px 28px 0 0; padding: 10px var(--lado-d) calc(22px + env(safe-area-inset-bottom, 0px)) var(--lado-i);
+  border-radius: 28px 28px 0 0; padding: 0 var(--lado-d) calc(22px + env(safe-area-inset-bottom, 0px)) var(--lado-i);
   transform: translateY(105%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); max-height: 90vh; overflow: auto; overscroll-behavior: contain;
 }
 .hoja.abierta { transform: none; }
-.asa { width: 40px; height: 5px; border-radius: 99px; background: var(--line); margin: 0 auto 14px; }
+/* Arriba de la hoja: el asa en el centro y la X a la derecha, fijas aunque se baje. */
+.hoja-arriba {
+  position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  margin: 0 calc(-1 * var(--lado-d)) 4px calc(-1 * var(--lado-i)); padding: 8px calc(var(--lado-d) - 4px) 4px var(--lado-i);
+  background: var(--card);
+}
+.asa { grid-column: 2; width: 40px; height: 5px; border-radius: 99px; background: var(--line); }
+.cerrar-hoja {
+  grid-column: 3; justify-self: end; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--track); color: var(--ink-2); transition: transform .15s;
+}
+.cerrar-hoja svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.cerrar-hoja:active { transform: scale(.9); }
 .hoja h3 { font-family: var(--f-titulo); font-size: 24px; font-weight: 750; letter-spacing: -.02em; margin: 0 0 8px; word-break: break-word; text-wrap: balance; }
 .campo { display: block; font-size: 13px; color: var(--muted); font-weight: 650; margin: 16px 0 7px; }
 .entrada { width: 100%; font: inherit; font-size: 18px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); outline: none; }
 .entrada:focus { border-color: var(--accent-texto); }
+.entrada.fecha { -webkit-appearance: none; appearance: none; min-height: 54px; text-align: left; }
+.entrada.fecha::-webkit-date-and-time-value { text-align: left; }
 .entrada.grande { font-family: var(--f-titulo); font-size: 36px; font-weight: 750; text-align: center; letter-spacing: -.02em; }
 .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
 .opcion { padding: 9px 13px; border-radius: 99px; background: var(--track); font-size: 14px; font-weight: 650; }
@@ -647,7 +661,10 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   </button>
 </nav>
 <div class="velo" id="velo"></div>
-<div class="hoja" id="hoja" role="dialog" aria-modal="true"><div class="asa"></div><div id="hoja-contenido"></div></div>
+<div class="hoja" id="hoja" role="dialog" aria-modal="true">
+  <div class="hoja-arriba"><div class="asa"></div><button class="cerrar-hoja" id="cerrar-hoja" type="button" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="hoja-contenido"></div>
+</div>
 <div class="capa-menu" id="capa-menu" hidden><div class="fondo" id="menu-fondo"></div></div>
 <div class="aviso" id="aviso" role="status"></div>
 
@@ -655,7 +672,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.6';
+  var VERSION = '4.7';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1441,11 +1458,16 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       return f.cuenta === cuenta && norm(f.concepto).trim() === norm(g.comercio).trim();
     })[0] || null;
   }
-  function textoRepetir(cada, fecha) {
-    var d = fecha.getDate();
-    if (cada === 'mes') return 'Se apunta hoy y después, solo, el día ' + d + ' de cada mes.';
-    if (cada === 'año') return 'Se apunta hoy y después, solo, cada ' + d + ' de ' + MESES[fecha.getMonth()] + '.';
-    return 'Para suscripciones y recibos que no se apuntan solos.';
+  function fechaTexto(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  // Explica cuándo se apunta lo que se repite, según el día en que lo cobran (aaaa-mm-dd).
+  function textoRepetir(cada, cobro) {
+    if (!cada) return 'Para suscripciones y recibos que no se apuntan solos.';
+    var p = cobro.split('-'), d = +p[2], mes = MESES[+p[1] - 1], hoy = fechaTexto(new Date());
+    var luego = cada === 'año' ? 'cada ' + d + ' de ' + mes : 'el día ' + d + ' de cada mes';
+    if (cobro === hoy) return 'Se apunta hoy y después, solo, ' + luego + '.';
+    if (cobro < hoy) return 'Se apunta con fecha ' + d + ' de ' + mes + ' y después, solo, ' + luego + '.';
+    return 'Ahora no se apunta: se apuntará solo el ' + d + ' de ' + mes + (cada === 'año' ? ' de ' + p[0] : '') +
+      ' y después ' + luego + '.';
   }
 
   function diasDelMes(y, m) { return new Date(y, m + 1, 0).getDate(); }
@@ -1454,13 +1476,19 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     var dia = f.dia || 1, y = hoy.getFullYear(), cand;
+    // «ultimo» es el último mes ya apuntado (aaaa-mm): si es este mes o después, el próximo es el siguiente a ese.
+    var u = /^\d{4}-\d{2}$/.test(f.ultimo || '') ? f.ultimo : '';
+    var en = function (a, m) { return new Date(a, m, Math.min(dia, diasDelMes(a, m))); };
     if (f.cada === ANIO && f.mesAnio) {
-      cand = new Date(y, f.mesAnio - 1, Math.min(dia, diasDelMes(y, f.mesAnio - 1)));
-      if (cand < hoy) cand = new Date(y + 1, f.mesAnio - 1, Math.min(dia, diasDelMes(y + 1, f.mesAnio - 1)));
+      if (u && +u.slice(0, 4) >= y) return dias(en(+u.slice(0, 4) + 1, f.mesAnio - 1));
+      cand = en(y, f.mesAnio - 1);
+      if (cand < hoy) cand = en(y + 1, f.mesAnio - 1);
     } else {
-      cand = new Date(y, hoy.getMonth(), Math.min(dia, diasDelMes(y, hoy.getMonth())));
-      if (cand < hoy) cand = new Date(y, hoy.getMonth() + 1, Math.min(dia, diasDelMes(y, hoy.getMonth() + 1)));
+      if (u && u >= mesDeHoy()) return dias(en(+u.slice(0, 4), +u.slice(5)));
+      cand = en(y, hoy.getMonth());
+      if (cand < hoy) cand = en(y, hoy.getMonth() + 1);
     }
+    function dias(d) { return Math.round((d - hoy) / 86400000); }
     return Math.round((cand - hoy) / 86400000);
   }
   function textoProximo(n) { return n === 0 ? 'Toca hoy' : n === 1 ? 'Mañana' : 'En ' + n + ' días'; }
@@ -1871,13 +1899,33 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     c.appendChild(opciones(CUENTAS, cuenta, function (v) { cuenta = v; }));
     var repetir = inicial || '';
     c.appendChild(el('label', 'campo', '¿Se repite?'));
-    var ayuda = el('p', 'ayuda', textoRepetir(repetir, new Date()));
-    c.appendChild(opciones(REPETIR, repetir, function (v) { repetir = v; ayuda.textContent = textoRepetir(v, new Date()); }));
+    c.appendChild(opciones(REPETIR, repetir, function (v) { repetir = v; ponerCobro(); }));
+    // Día en que lo cobran: desde el día 1 de este mes hasta dentro de un año. Si aún no ha llegado, se apunta solo ese día.
+    var hoy = new Date(), hoyTxt = fechaTexto(hoy);
+    var caja = el('div');
+    caja.appendChild(el('label', 'campo', '¿Cuándo te lo cobran?'));
+    var cobro = el('input', 'entrada fecha');
+    cobro.type = 'date';
+    cobro.value = hoyTxt;
+    cobro.min = fechaTexto(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    cobro.max = fechaTexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
+    caja.appendChild(cobro);
+    c.appendChild(caja);
+    var ayuda = el('p', 'ayuda');
     c.appendChild(ayuda);
+    function diaCobro() { var v = cobro.value; return v && v >= cobro.min && v <= cobro.max ? v : hoyTxt; }
+    function ponerCobro() {
+      caja.hidden = !repetir;
+      ayuda.textContent = textoRepetir(repetir, diaCobro());
+    }
+    cobro.oninput = cobro.onchange = ponerCobro;
+    ponerCobro();
     botonGuardar(c, function () {
       if (!/\d/.test(imp.value)) { imp.focus(); avisar('Escribe cuánto has gastado'); return null; }
       if (repetir && !com.value.trim()) { com.focus(); avisar('Escribe dónde, por ejemplo Netflix'); return null; }
-      return API.apuntar({ importe: imp.value.trim(), comercio: com.value.trim(), categoria: cat, cuenta: cuenta, repetir: repetir });
+      var g = { importe: imp.value.trim(), comercio: com.value.trim(), categoria: cat, cuenta: cuenta, repetir: repetir };
+      if (repetir) g.fecha = diaCobro();
+      return API.apuntar(g);
     }, true);
     setTimeout(function () { imp.focus(); }, 280);
   }
@@ -2351,6 +2399,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     };
   });
   $('velo').onclick = cerrarHoja;
+  $('cerrar-hoja').onclick = cerrarHoja;
   $('alerta').onclick = function () { verMovimientos({ campo: 'categoria', valor: SIN }); };
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { cerrarHoja(); cerrarMenu(); } });
   window.addEventListener('resize', function () { if (!$('app').hidden) dibujarGuilloche(); });
