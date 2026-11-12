@@ -20,7 +20,7 @@
 (function () {
   try {
     var color = localStorage.getItem('bycash-color'), modo = localStorage.getItem('bycash-modo');
-    if (/^(amarillo|esmeralda|teja|frambuesa|ciruela|grafito)$/.test(color || '')) document.documentElement.setAttribute('data-color', color);
+    if (/^(amarillo|esmeralda|teja|ciruela|grafito)$/.test(color || '')) document.documentElement.setAttribute('data-color', color);
     if (modo === 'light' || modo === 'dark') document.documentElement.setAttribute('data-theme', modo);
   } catch (e) { /* sin memoria del navegador: colores de siempre */ }
 })();
@@ -101,11 +101,6 @@
   --accent: #cc4a1f; --accent-ink: #ffffff; --accent-soft: #fbe8df; --acento-sombra: rgba(204, 74, 31, .36);
   --h1: #f9cdb9; --h2: #f0916a; --h3: #d4572e; --h4: #8f3516;
 }
-:root[data-color="frambuesa"] {
-  --bg: #f5eff2; --billete: #c2266a; --billete-2: #861244; --seg-activo-ink: #861244;
-  --accent: #c2266a; --accent-ink: #ffffff; --accent-soft: #fbe4ee; --acento-sombra: rgba(194, 38, 106, .34);
-  --h1: #f7c3d7; --h2: #ec7fa8; --h3: #c8336d; --h4: #84173f;
-}
 :root[data-color="ciruela"] {
   --bg: #f2eff6; --billete: #6d34a8; --billete-2: #431c70; --seg-activo-ink: #431c70;
   --accent: #7038ad; --accent-ink: #ffffff; --accent-soft: #efe6f8; --acento-sombra: rgba(112, 56, 173, .34);
@@ -127,11 +122,6 @@
     --accent: #ff9b70; --accent-ink: #1a0b05; --accent-soft: #33190f; --acento-sombra: rgba(0, 0, 0, .45);
     --h1: #8f3516; --h2: #d4572e; --h3: #f0916a; --h4: #f9cdb9;
   }
-  :root[data-color="frambuesa"]:not([data-theme="light"]) {
-    --bg: #090c14; --billete: #7d1745; --billete-2: #3e0a22; --seg-activo-ink: #ffffff; --guilloche: rgba(255, 160, 200, .18);
-    --accent: #ff7fb0; --accent-ink: #1a0610; --accent-soft: #331422; --acento-sombra: rgba(0, 0, 0, .45);
-    --h1: #84173f; --h2: #c8336d; --h3: #ec7fa8; --h4: #f7c3d7;
-  }
   :root[data-color="ciruela"]:not([data-theme="light"]) {
     --bg: #090c14; --billete: #4a2275; --billete-2: #24103b; --seg-activo-ink: #ffffff; --guilloche: rgba(200, 165, 255, .18);
     --accent: #c59cf5; --accent-ink: #140a20; --accent-soft: #261a36; --acento-sombra: rgba(0, 0, 0, .45);
@@ -152,11 +142,6 @@
   --bg: #090c14; --billete: #8a3315; --billete-2: #45190a; --seg-activo-ink: #ffffff; --guilloche: rgba(255, 180, 140, .18);
   --accent: #ff9b70; --accent-ink: #1a0b05; --accent-soft: #33190f; --acento-sombra: rgba(0, 0, 0, .45);
   --h1: #8f3516; --h2: #d4572e; --h3: #f0916a; --h4: #f9cdb9;
-}
-:root[data-color="frambuesa"][data-theme="dark"] {
-  --bg: #090c14; --billete: #7d1745; --billete-2: #3e0a22; --seg-activo-ink: #ffffff; --guilloche: rgba(255, 160, 200, .18);
-  --accent: #ff7fb0; --accent-ink: #1a0610; --accent-soft: #331422; --acento-sombra: rgba(0, 0, 0, .45);
-  --h1: #84173f; --h2: #c8336d; --h3: #ec7fa8; --h4: #f7c3d7;
 }
 :root[data-color="ciruela"][data-theme="dark"] {
   --bg: #090c14; --billete: #4a2275; --billete-2: #24103b; --seg-activo-ink: #ffffff; --guilloche: rgba(200, 165, 255, .18);
@@ -670,7 +655,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.5';
+  var VERSION = '4.6';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -715,8 +700,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   // Colores a elegir: clave, nombre y los dos tonos de la muestra (billete y color de acción).
   var COLORES_APP = [
     ['cobalto', 'Cobalto', '#2149d6', '#2550e0'], ['amarillo', 'Amarillo', '#111214', '#ffcc00'],
-    ['esmeralda', 'Esmeralda', '#12855f', '#5cc5a0'],
-    ['teja', 'Teja', '#d2562c', '#f0916a'], ['frambuesa', 'Frambuesa', '#c2266a', '#ec7fa8'],
+    ['esmeralda', 'Esmeralda', '#12855f', '#5cc5a0'], ['teja', 'Teja', '#d2562c', '#f0916a'],
     ['ciruela', 'Ciruela', '#6d34a8', '#b48ad9'], ['grafito', 'Grafito', '#2c303b', '#a2a7b3']
   ];
   var MODOS = [['', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']];
