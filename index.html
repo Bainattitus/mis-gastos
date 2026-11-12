@@ -666,6 +666,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 <script>
 (function () {
   'use strict';
+  // Súbela en cada cambio: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
+  var VERSION = '4.4';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -2188,6 +2190,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     $('app').hidden = false;
     $('pestanas').hidden = false;
     avisoInstalar();
+    buscarVersionNueva();
     cargar();
   }
 
@@ -2234,9 +2237,30 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     document.head.appendChild(s);
   }
 
+  // El iPhone guarda la página hasta 10 minutos. Al abrirla o volver a ella, mira si en la web hay otra versión
+  // y, si la hay, se recarga. Como mucho una vez por minuto, para no quedarse recargando si el móvil insiste en la vieja.
+  function buscarVersionNueva() {
+    if (window.API_PRUEBA || !window.fetch) return;
+    fetch(location.pathname + '?version=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (texto) {
+        var m = texto.match(/var VERSION = '([^']+)'/);
+        if (!m || m[1] === VERSION) return;
+        var antes = 0;
+        try { antes = +window.sessionStorage.getItem('bycash-recarga') || 0; } catch (e) { antes = 0; }
+        if (Date.now() - antes < 60000) { avisar('Hay una versión nueva: cierra la app del todo y ábrela otra vez.'); return; }
+        try { window.sessionStorage.setItem('bycash-recarga', String(Date.now())); } catch (e) { return; }
+        location.reload();
+      })
+      .catch(function () { return null; });
+  }
+
   // Al volver a la app (por ejemplo, después de pagar), trae lo último si han pasado más de 20 segundos.
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && (conexion || window.API_PRUEBA) && !$('app').hidden && Date.now() - ultimaCarga > 20000) cargar();
+    if (!document.hidden && (conexion || window.API_PRUEBA) && !$('app').hidden && Date.now() - ultimaCarga > 20000) {
+      buscarVersionNueva();
+      cargar();
+    }
   });
   $('conectar-boton').onclick = conectar;
   $('conectar-enlace').addEventListener('keydown', function (e) { if (e.key === 'Enter') conectar(); });
@@ -2268,7 +2292,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   $('ver-todo').onclick = function () { verMovimientos(null); };
   $('anterior').onclick = function () { irAMes(moverMes(est.mes, -1)); };
   $('siguiente').onclick = function () { if (est.mes < mesDeHoy()) irAMes(moverMes(est.mes, 1)); };
-  $('recargar').onclick = function () { cargar(); };
+  $('recargar').onclick = function () { buscarVersionNueva(); cargar(); };
   $('mas').onclick = abrirMas;
   $('apuntar').onclick = function () { abrirApuntar(''); };
   $('colores').onclick = abrirColores;
