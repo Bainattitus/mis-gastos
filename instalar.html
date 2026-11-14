@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#14329b">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png?v=4">
+<link rel="apple-touch-icon" href="icono-180.png?v=4">
+<title>Instalar ByCash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Guía para instalar ByCash desde cero: una columna, con un dibujo de cada pantalla y lo que hay que tocar marcado. */
+:root {
+  --bg: #eef1f7; --card: #ffffff; --ink: #10163a; --ink-2: #474f6e; --muted: #6b7290; --line: #e3e7f0; --soft: #f4f6fb;
+  --accent: #2550e0; --accent-ink: #ffffff; --accent-soft: #e6ecfd; --ok: #0f8a61; --ok-soft: #e0f3eb; --aviso: #b26a00; --aviso-soft: #fff3dc;
+  --billete: #2550e0; --billete-2: #14329b; --google: #1a73e8; --ios: #007aff; --marca: #ff8a00;
+  --f-titulo: "Bricolage Grotesque", system-ui, sans-serif; --f-texto: system-ui, -apple-system, "Segoe UI", sans-serif; --f-cifra: "DM Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #090c14; --card: #141924; --ink: #edf0f8; --ink-2: #c3c9db; --muted: #8e96ad; --line: #232a38; --soft: #1b2130;
+    --accent: #7d9dff; --accent-ink: #090c14; --accent-soft: #1a2446; --ok: #4fd1a1; --ok-soft: #12291f; --aviso: #ffc46b; --aviso-soft: #33270f;
+    --billete: #1c2f7e; --billete-2: #0e1847;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--f-texto); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+.pagina { max-width: 640px; margin: 0 auto; padding: 0 16px 60px; }
+
+/* Cabecera tipo billete, como la app */
+.cabecera { background: linear-gradient(140deg, var(--billete), var(--billete-2)); color: #fff; padding: calc(28px + env(safe-area-inset-top, 0px)) 20px 26px;
+  border-radius: 0 0 28px 28px; margin: 0 0 20px; }
+.cabecera .dentro { max-width: 608px; margin: 0 auto; }
+.logo { width: 56px; height: 56px; border-radius: 15px; display: block; margin-bottom: 14px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25); }
+h1 { font-family: var(--f-titulo); font-size: 34px; line-height: 1.05; margin: 0 0 8px; letter-spacing: -.025em; }
+.cabecera p { margin: 0; color: rgba(235, 240, 255, .86); }
+.necesitas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.necesitas span { background: rgba(255, 255, 255, .14); border-radius: 99px; padding: 5px 12px; font-size: 14px; font-weight: 600; }
+
+/* Partes y pasos */
+.parte { display: flex; align-items: center; gap: 12px; margin: 30px 2px 12px; }
+.parte .emoji { font-size: 30px; }
+.parte h2 { font-family: var(--f-titulo); font-size: 24px; margin: 0; letter-spacing: -.015em; line-height: 1.1; }
+.parte small { display: block; color: var(--muted); font-family: var(--f-texto); font-size: 14px; font-weight: 500; letter-spacing: 0; }
+.paso { background: var(--card); border-radius: 22px; padding: 18px 16px 18px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(16, 22, 58, .05), 0 8px 24px rgba(16, 22, 58, .05); }
+.paso-cab { display: flex; gap: 12px; align-items: flex-start; }
+.num { flex: none; width: 34px; height: 34px; border-radius: 11px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center;
+  font-family: var(--f-cifra); font-weight: 500; font-size: 17px; }
+.paso h3 { font-family: var(--f-titulo); font-size: 19px; line-height: 1.2; margin: 4px 0 4px; letter-spacing: -.01em; }
+.paso p { margin: 6px 0; color: var(--ink-2); }
+.paso ol { margin: 8px 0 4px; padding-left: 22px; color: var(--ink-2); } .paso li { margin: 5px 0; }
+b { color: var(--ink); }
+.tiempo { font-size: 13px; color: var(--muted); font-weight: 600; }
+.boton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 4px; padding: 13px 20px; border-radius: 14px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 700; text-decoration: none; font-size: 16px; }
+.boton.pendiente { background: var(--soft); color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--line); pointer-events: none; font-weight: 600; }
+.nota { display: flex; gap: 10px; background: var(--soft); border-radius: 14px; padding: 11px 13px; margin-top: 12px; font-size: 14.5px; color: var(--ink-2); }
+.nota.aviso { background: var(--aviso-soft); } .nota.ok { background: var(--ok-soft); }
+.nota .ico { flex: none; }
+
+/* Dibujos de pantallas: simplificados, con lo que hay que tocar marcado en naranja */
+.pantalla { margin: 14px 0 4px; border-radius: 16px; background: #f1f3f4; padding: 14px; color: #202124; font: 14px/1.4 Arial, sans-serif;
+  border: 1px solid #dadce0; position: relative; overflow: hidden; }
+.pantalla.ios { background: #f2f2f7; border-color: #d8d8de; font-family: -apple-system, system-ui, sans-serif; color: #000; }
+.pantalla.oscura { background: #0d1120; border-color: #252c3d; color: #edf0f8; }
+.pantalla b { color: inherit; }  /* Los dibujos son de pantallas claras: la negrita no sigue al modo oscuro de la guía. */
+.pantalla .etiqueta { position: absolute; top: 8px; right: 10px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #80868b; font-weight: 700; }
+.dialogo { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, .15); max-width: 360px; }
+.dialogo .t { font-size: 17px; margin-bottom: 8px; }
+.dialogo .campo { border: 1px solid #dadce0; border-radius: 6px; padding: 8px 10px; margin: 6px 0; display: flex; justify-content: space-between; gap: 8px; }
+.dialogo .campo span { color: #5f6368; font-size: 12px; } .dialogo .botones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.g-btn { display: inline-block; padding: 8px 16px; border-radius: 6px; font-weight: 700; background: var(--google); color: #fff; font-size: 14px; }
+.g-btn.plano { background: transparent; color: var(--google); }
+.marcar { outline: 3px solid var(--marca); outline-offset: 3px; border-radius: 8px; animation: late 1.6s ease-in-out infinite; }
+@keyframes late { 50% { outline-color: rgba(255, 138, 0, .25); } }
+@media (prefers-reduced-motion: reduce) { .marcar { animation: none; } }
+.flecha { color: var(--marca); font-weight: 800; padding: 0 4px; }
+.barra-menus { display: flex; flex-wrap: wrap; gap: 4px 12px; background: #fff; border-radius: 8px; padding: 8px 10px; font-size: 13.5px; color: #3c4043; }
+.desplegable { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, .18); margin: 6px 0 0 auto; width: max-content; padding: 6px 0; }
+.desplegable div { padding: 7px 16px; } .desplegable.izq { margin-left: 0; }
+.as-barra { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px; padding: 8px 10px; }
+.as-barra .nombre { font-weight: 700; color: #3c4043; }
+.aviso-g { background: #fff; border-radius: 12px; padding: 16px; max-width: 380px; }
+.aviso-g .t { font-size: 18px; margin-bottom: 6px; } .aviso-g p { color: #5f6368; margin: 0 0 10px; font-size: 13.5px; }
+.enlace-g { color: var(--google); text-decoration: underline; display: inline-block; margin: 3px 0; }
+.url-falsa { font-family: var(--f-cifra); font-size: 12px; color: #5f6368; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hoja-ios { background: #fff; border-radius: 14px; overflow: hidden; max-width: 340px; margin: 0 auto; }
+.hoja-ios div { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-top: 1px solid #e5e5ea; font-size: 15px; }
+.hoja-ios div:first-child { border-top: 0; }
+.interruptor { width: 46px; height: 28px; border-radius: 99px; background: #e5e5ea; position: relative; flex: none; }
+.interruptor::after { content: ""; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.interruptor.si { background: #34c759; } .interruptor.si::after { left: 20px; }
+.ios-btn { display: block; text-align: center; background: var(--ios); color: #fff; border-radius: 12px; padding: 11px; font-weight: 600; max-width: 340px; margin: 10px auto 0; }
+.app-mas { background: #141924; border-radius: 16px; padding: 14px; max-width: 340px; margin: 0 auto; }
+.app-mas .op { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; }
+.app-mas .op small { display: block; color: #8e96ad; font-size: 12px; }
+.icono-app { width: 60px; height: 60px; border-radius: 14px; display: block; margin: 0 auto 6px; }
+.centro { text-align: center; }
+
+/* Paso al iPhone */
+.al-movil { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; background: var(--card); border-radius: 22px; padding: 18px; margin: 20px 0 6px;
+  box-shadow: inset 0 0 0 2px var(--accent-soft); }
+.al-movil .qr { width: 150px; height: 150px; background: #fff; border-radius: 12px; padding: 8px; }
+.al-movil .qr svg { width: 100%; height: 100%; display: block; }
+.al-movil h3 { font-family: var(--f-titulo); font-size: 20px; margin: 0 0 4px; }
+.al-movil p { margin: 0; color: var(--ink-2); }
+.solo-movil { display: none; }
+@media (max-width: 700px) {
+  .al-movil { grid-template-columns: 1fr; } .al-movil .qr { display: none; }
+  .solo-ordenador { display: none; } .solo-movil { display: inline; }
+}
+.final { text-align: center; color: var(--muted); font-size: 14px; margin-top: 30px; }
+.final b { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<header class="cabecera">
+  <div class="dentro">
+    <img class="logo" src="icono-180.png?v=4" alt="">
+    <h1>Instala tu ByCash</h1>
+    <p>Tu propia app de gastos en el iPhone. Apunta sola lo que pagas con Apple Pay y te enseña en qué se te va el dinero cada mes.</p>
+    <div class="necesitas"><span>⏱ Unos 20 minutos</span><span>💻 Un ordenador</span><span>📱 Tu iPhone</span><span>🔑 Tu cuenta de Google</span></div>
+  </div>
+</header>
+<main class="pagina">
+
+  <div class="nota ok"><span class="ico">🔒</span><span><b>Tus datos son solo tuyos.</b> Se guardan en una hoja de Google de tu cuenta. Nadie más puede verlos, tampoco quien te ha pasado esta guía.</span></div>
+
+  <!-- ───────────── PARTE 1 ───────────── -->
+  <div class="parte" id="ordenador"><span class="emoji">💻</span><h2>En el ordenador<small>Unos 10 minutos. Mejor con Chrome o Edge.</small></h2></div>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">1</span><div>
+      <h3>Haz tu copia de la hoja</h3>
+      <p>Toca el botón y entra con <b>tu</b> cuenta de Google si te lo pide. Después pulsa <b>«Hacer una copia»</b>.</p>
+      <a class="boton" data-enlace="plantilla" href="#" target="_blank" rel="noopener">📄 Hacer mi copia de ByCash</a>
+    </div></div>
+    <div class="pantalla"><span class="etiqueta">Así se ve</span>
+      <div class="dialogo">
+        <div class="t">¿Copiar documento?</div>
+        <div class="campo">Copia de ByCash <span>Nombre</span></div>
+        <div class="botones"><span class="g-btn marcar">Hacer una copia</span></div>
+      </div>
+    </div>
+    <div class="nota"><span class="ico">💡</span><span>Se abre tu hoja, con el nombre «Copia de ByCash». Puedes llamarla como quieras.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">2</span><div>
+      <h3>Publícala para que tu iPhone pueda hablar con ella</h3>
+      <p>Es el único paso algo técnico, pero son 6 clics:</p>
+      <ol>
+        <li>En tu hoja, menú <b>Extensiones</b> → <b>Apps Script</b>. Se abre otra pestaña.</li>
+        <li>Arriba a la derecha, botón azul <b>Implementar</b> → <b>Nueva implementación</b>.</li>
+        <li>Toca la <b>rueda ⚙</b> y elige <b>Aplicación web</b>.</li>
+        <li>En «Quién tiene acceso», elige <b>Cualquier usuario</b>. «Ejecutar como» se queda en <b>Yo</b>.</li>
+        <li>Pulsa <b>Implementar</b>.</li>
+      </ol>
+    </div></div>
+    <div class="pantalla"><span class="etiqueta">Apps Script</span>
+      <div class="as-barra"><span class="nombre">⟨⟩ Apps Script · Copia de ByCash</span><span class="g-btn marcar">Implementar ▾</span></div>
+      <div class="desplegable"><div class="marcar">Nueva implementación</div><div style="color:#80868b">Gestionar implementaciones</div></div>
+      <div class="dialogo" style="margin-top:12px">
+        <div class="t">Nueva implementación</div>
+        <div class="campo"><b>⚙ Aplicación web</b> <span>Tipo</span></div>
+        <div class="campo">Yo <span>Ejecutar como</span></div>
+        <div class="campo marcar">Cualquier usuario <span>Quién tiene acceso</span></div>
+        <div class="botones"><span class="g-btn plano">Cancelar</span><span class="g-btn marcar">Implementar</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">3</span><div>
+      <h3>Dale permiso</h3>
+      <p>Google te pedirá permiso. Pulsa <b>Autorizar acceso</b> y elige tu cuenta. Después saldrá este aviso:</p>
+    </div></div>
+    <div class="pantalla"><span class="etiqueta">Aviso de Google</span>
+      <div class="aviso-g">
+        <div class="t">⚠️ Google no ha verificado esta aplicación</div>
+        <p>La aplicación quiere acceder a tu cuenta de Google…</p>
+        <span class="enlace-g marcar">Configuración avanzada</span><br>
+        <span class="enlace-g marcar">Ir a ByCash (no seguro)</span>
+      </div>
+    </div>
+    <ol>
+      <li>Pulsa <b>Configuración avanzada</b> y luego el enlace de abajo, <b>Ir a ByCash (no seguro)</b>. Puede que ponga «Copia de ByCash»: es lo mismo.</li>
+      <li>Si salen casillas, marca <b>Seleccionar todo</b> y pulsa <b>Continuar</b>.</li>
+      <li>Al final sale la <b>URL de la aplicación web</b>: pulsa <b>Copiar</b> y luego <b>Hecho</b>.</li>
+    </ol>
+    <div class="nota aviso"><span class="ico">🤔</span><span><b>¿Por qué dice «no seguro»?</b> Porque la app es tuya y no de una empresa, y Google solo avisa de que no la ha revisado. El código solo puede usar esta hoja: no toca tu correo ni tus otros archivos.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">4</span><div>
+      <h3>Instala ByCash con un clic</h3>
+      <ol>
+        <li>Vuelve a la pestaña de tu hoja y <b>recárgala</b> (tecla F5). Arriba aparecerá un menú nuevo: <b>ByCash</b>.</li>
+        <li>Pulsa <b>ByCash</b> → <b>Instalar o reparar</b>. Tarda unos 20 segundos.</li>
+      </ol>
+    </div></div>
+    <div class="pantalla"><span class="etiqueta">Tu hoja</span>
+      <div class="barra-menus"><span>Archivo</span><span>Editar</span><span>Ver</span><span>Insertar</span><span>Formato</span><span>Datos</span><span>Extensiones</span><span class="marcar"><b>ByCash</b></span></div>
+      <div class="desplegable"><div class="marcar">Instalar o reparar</div><div style="color:#80868b">Ver mis enlaces</div></div>
+      <div class="dialogo" style="margin-top:12px">
+        <div class="t">✅ <b>ByCash está instalado.</b></div>
+        <div style="color:#5f6368">Abre tu app en este ordenador: te enseña un código QR para llevarla al iPhone.</div>
+        <div class="botones" style="justify-content:flex-start"><span class="g-btn marcar">Abrir mi app</span></div>
+      </div>
+    </div>
+    <ol start="3"><li>Pulsa <b>Abrir mi app</b>. Se abre ByCash con un código QR. <b>Deja esa ventana abierta</b>: la usarás en el paso 5.</li></ol>
+    <div class="nota"><span class="ico">🧩</span><span>¿Te dice que falta un paso? Pega la URL que copiaste en el paso 3 en la pestaña <b>Config</b>, celda amarilla <b>B3</b>, y pulsa otra vez <b>ByCash → Instalar o reparar</b>.</span></div>
+  </section>
+
+  <div class="al-movil" id="seguir">
+    <div class="qr" id="qr" aria-label="Código QR de esta guía"></div>
+    <div>
+      <h3><span class="solo-ordenador">📱 Sigue en el iPhone</span><span class="solo-movil">📱 Ya estás en el iPhone</span></h3>
+      <p class="solo-ordenador">Abre la cámara del iPhone, apunta a este código y toca el enlace que aparece: la guía sigue allí, porque los atajos se añaden desde el iPhone.</p>
+      <p class="solo-movil">Sigue aquí con la parte 2. Ten a mano el ordenador con tu app abierta.</p>
+    </div>
+  </div>
+
+  <!-- ───────────── PARTE 2 ───────────── -->
+  <div class="parte" id="iphone"><span class="emoji">📱</span><h2>En el iPhone<small>Unos 10 minutos.</small></h2></div>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">5</span><div>
+      <h3>Pon ByCash en tu pantalla de inicio</h3>
+      <ol>
+        <li>Con la <b>cámara</b>, apunta al QR que enseña tu app en el ordenador y toca el enlace. Se abre en Safari.</li>
+        <li>Toca <b>Compartir</b> (el cuadrado con la flecha ⬆️). Si no lo ves, toca antes los tres puntos <b>«…»</b>.</li>
+        <li>Elige <b>Añadir a pantalla de inicio</b>. Deja encendido <b>Abrir como app web</b> y toca <b>Añadir</b>.</li>
+      </ol>
+    </div></div>
+    <div class="pantalla ios"><span class="etiqueta">Safari</span>
+      <div class="hoja-ios">
+        <div>Copiar <span>📋</span></div>
+        <div class="marcar">Añadir a pantalla de inicio <span>⊞</span></div>
+        <div>Añadir a favoritos <span>☆</span></div>
+      </div>
+      <div class="hoja-ios" style="margin-top:12px"><div>Abrir como app web <span class="interruptor si marcar"></span></div></div>
+    </div>
+    <div class="nota ok"><span class="ico">🎉</span><span>Ya tienes el icono amarillo de <b>ByCash</b>. Ábrelo desde ahí, no desde Safari, para que se vea como una app.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">6</span><div>
+      <h3>Copia tu enlace para los atajos</h3>
+      <p>Los atajos son los que apuntan solos tus pagos. Necesitan un enlace a tu hoja:</p>
+      <ol>
+        <li>Abre <b>ByCash</b> y toca <b>«⋯»</b>, arriba.</li>
+        <li>Toca <b>Copiar el enlace para los atajos</b>.</li>
+      </ol>
+    </div></div>
+    <div class="pantalla oscura"><span class="etiqueta">ByCash</span>
+      <div class="app-mas">
+        <div class="op">🎨<span>Colores y modo oscuro<small>Elige el color de la app</small></span></div>
+        <div class="op marcar">🔗<span>Copiar el enlace para los atajos<small>Se pega al añadir los atajos</small></span></div>
+        <div class="op">🚪<span>Desconectar este móvil<small>Tus datos siguen en la hoja</small></span></div>
+      </div>
+    </div>
+    <div class="nota aviso"><span class="ico">🔑</span><span>Ese enlace es como la llave de tu hoja: <b>no se lo pases a nadie</b>.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">7</span><div>
+      <h3>Añade los atajos</h3>
+      <p>Toca cada botón en el iPhone. Se abre la app <b>Atajos</b>: toca <b>Añadir atajo</b>. Cuando te pida el enlace, mantén pulsado el cuadro y elige <b>Pegar</b>.</p>
+      <a class="boton" data-enlace="gastos" href="#" target="_blank" rel="noopener">💳 Añadir «ByCash Gastos» (Apple Pay)</a><br>
+      <a class="boton" data-enlace="revolut" href="#" target="_blank" rel="noopener">🏦 Añadir «ByCash Revolut»</a>
+    </div></div>
+    <div class="pantalla ios"><span class="etiqueta">Atajos</span>
+      <div class="hoja-ios"><div style="display:block">
+        <b>Configura este atajo</b><br><span style="color:#8e8e93;font-size:13px">Pega aquí tu enlace de ByCash</span>
+        <div class="marcar" style="margin-top:8px;border:1px solid #d1d1d6;border-radius:8px;padding:9px;color:#8e8e93">https://script.google.com/…</div>
+      </div></div>
+      <span class="ios-btn marcar">Añadir atajo</span>
+    </div>
+    <div class="nota"><span class="ico">💡</span><span><b>«ByCash Gastos»</b> apunta lo que pagas con Apple Pay, con cualquier tarjeta. <b>«ByCash Revolut»</b> lee los avisos de Revolut, también los de la cuenta conjunta. Si no usas Revolut, sáltate ese.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">8</span><div>
+      <h3>Enciende las automatizaciones</h3>
+      <p>Así los atajos funcionan solos, sin que tengas que tocar nada al pagar.</p>
+      <ol>
+        <li>Abre <b>Atajos</b> y toca el atajo <b>ByCash Gastos</b>. Arriba del todo está <b>Al usar cualquier tarjeta</b>: toca su flechita <b>›</b>.</li>
+        <li>Deja <b>Automatización</b> encendido y <b>Confirmar antes de ejecutar</b> apagado.</li>
+        <li>Haz lo mismo con <b>ByCash Revolut</b>: arriba pone que salta con las notificaciones de Revolut.</li>
+      </ol>
+    </div></div>
+    <div class="pantalla ios"><span class="etiqueta">Atajos</span>
+      <div class="hoja-ios">
+        <div><b>💳 Al usar cualquier tarjeta</b><span style="color:#8e8e93">›</span></div>
+        <div>Automatización <span class="interruptor si marcar"></span></div>
+        <div>Confirmar antes de ejecutar <span class="interruptor marcar"></span></div>
+      </div>
+    </div>
+    <div class="nota aviso"><span class="ico">⚠️</span><span>Si arriba pone <b>«La automatización está desactivada»</b>, no funcionará: vuelve a encender el interruptor.</span></div>
+  </section>
+
+  <!-- ───────────── PARTE 3 ───────────── -->
+  <div class="parte" id="probar"><span class="emoji">✅</span><h2>Comprueba que funciona<small>2 minutos.</small></h2></div>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">9</span><div>
+      <h3>Una prueba rápida</h3>
+      <ol>
+        <li>En <b>Atajos</b>, pulsa una vez el botón <b>▶</b> de cada atajo. Saldrá un aviso para conectarse a script.google.com: elige <b>Permitir siempre</b>. Si después pone «Error: no entiendo el importe», <b>es normal</b>, porque no has pagado nada.</li>
+        <li>Abre <b>ByCash</b>, toca <b>«+»</b>, escribe <b>1</b> y <b>Prueba</b>, y guarda. Tiene que salir en la lista.</li>
+        <li>Desliza ese gasto <b>a la izquierda</b> para borrarlo.</li>
+        <li>La próxima vez que pagues con el iPhone, mira que aparece solo, con su importe y su tienda.</li>
+      </ol>
+    </div></div>
+    <div class="nota ok"><span class="ico">🪄</span><span><b>Trucos:</b> desliza un gasto a la derecha para cambiar su categoría y la app aprenderá para la próxima vez. Mantenlo pulsado para ver todo lo que puedes hacer con él.</span></div>
+  </section>
+
+  <section class="paso">
+    <div class="paso-cab"><span class="num">?</span><div>
+      <h3>Si algo falla</h3>
+      <ul style="padding-left:20px;color:var(--ink-2)">
+        <li><b>Al abrir Apps Script sale «No se puede abrir el archivo».</b> Pasa si tienes varias cuentas de Google abiertas. Abre una ventana de incógnito (Ctrl+Mayús+N), entra solo con tu cuenta y repite.</li>
+        <li><b>No aparece el menú ByCash.</b> Recarga la hoja con F5 y espera unos segundos.</li>
+        <li><b>Al pagar, el iPhone avisa de un error.</b> Suele ser falta de cobertura. Apunta ese gasto con «+».</li>
+        <li><b>Un pago no aparece.</b> Revisa el paso 8: la automatización tiene que estar encendida.</li>
+        <li><b>Otra cosa.</b> Pregúntale a quien te pasó esta guía y mándale una captura.</li>
+      </ul>
+    </div></div>
+  </section>
+
+  <p class="final">Hecho con <b>ByCash</b> · Gratis y sin anuncios</p>
+</main>
+
+<script src="qrcode.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  // Enlaces que pone quien comparte ByCash: la hoja plantilla (acabada en /copy) y los atajos de iCloud.
+  // Los atajos no llevan ningún enlace personal: cada persona pega el suyo al añadirlos (paso 7).
+  var ENLACES = {
+    plantilla: 'https://docs.google.com/spreadsheets/d/1U1OdHUDQShaQ0PrM-A5ExBZbVEAPpj5rtVvh7dPNbmo/copy',
+    gastos: 'https://www.icloud.com/shortcuts/ea5f74239c26474cb8e5f3c621e0d9fb',
+    revolut: 'https://www.icloud.com/shortcuts/07506f0fa41b4e9f9428e61b4374afef'
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-enlace]'), function (a) {
+    var url = ENLACES[a.getAttribute('data-enlace')];
+    if (url) { a.href = url; return; }
+    a.classList.add('pendiente');
+    a.removeAttribute('href');
+    a.textContent = '⏳ Enlace pendiente: pídeselo a quien te pasó la guía';
+  });
+  // QR para seguir la guía en el iPhone, en la parte 2. Se hace aquí mismo: la dirección no sale del navegador.
+  try {
+    var qr = qrcode(0, 'M');
+    qr.addData(location.href.split('#')[0] + '#iphone');
+    qr.make();
+    document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  } catch (e) {
+    document.getElementById('qr').style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>
