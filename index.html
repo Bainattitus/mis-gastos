@@ -258,6 +258,20 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .lista > .fila:first-child { border-top: 0; }
 .fila.apretando { transform: scale(.965); }
 .fila.quitando { height: 0 !important; padding-top: 0; padding-bottom: 0; opacity: 0; overflow: hidden; border-top-color: transparent; transition: height .25s ease, padding .25s ease, opacity .18s; }
+/* Deslizar una fila: a la izquierda, borrar; a la derecha, cambiar la categoría. Lo de dentro se mueve y el fondo de color se queda. */
+.fila.desliza { position: relative; touch-action: pan-y; overflow: hidden; }
+.fila.desliza > :not(.accion) { transform: translateX(var(--dx, 0px)); transition: transform .24s cubic-bezier(.2, .8, .3, 1); }
+.fila.desliza.arrastrando > :not(.accion) { transition: none; }
+.fila .accion { position: absolute; top: 5px; bottom: 5px; width: 0; display: flex; align-items: center; gap: 7px; padding: 0; border-radius: 14px;
+  font-size: 14px; font-weight: 650; white-space: nowrap; overflow: hidden; pointer-events: none; transition: width .24s cubic-bezier(.2, .8, .3, 1); }
+.fila.arrastrando .accion { transition: none; }
+.fila .accion svg { flex: none; transition: transform .18s ease; }
+.fila .accion.listo svg { transform: scale(1.25); }
+.fila .accion.borrar { right: 0; justify-content: flex-end; background: var(--bad); color: var(--card); }
+.fila .accion.cat { left: 0; background: var(--accent); color: var(--accent-ink); }
+/* El margen va dentro y no en el relleno: así, cerrada del todo, no asoma ni un trocito de color. */
+.fila .accion.borrar > :last-child { margin-right: 14px; }
+.fila .accion.cat > :first-child { margin-left: 14px; }
 .ficha { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; flex: none; background: var(--track); background: color-mix(in srgb, var(--c, var(--resto)) 18%, var(--card)); }
 .ficha.grande { width: 52px; height: 52px; border-radius: 17px; font-size: 26px; background: color-mix(in srgb, var(--c, var(--resto)) 22%, var(--papel)); }
 .puesto { width: 30px; height: 30px; border-radius: 10px; background: var(--track); display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--muted); flex: none; font-family: var(--f-cifra); }
@@ -489,6 +503,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   opacity: 0; transition: opacity .25s, transform .25s; z-index: 50; width: max-content; max-width: calc(100% - 32px); text-align: center; pointer-events: none;
 }
 .aviso.visible { opacity: 1; transform: translate(-50%, 0); }
+.aviso.con-boton { pointer-events: auto; display: flex; align-items: center; gap: 14px; padding: 7px 7px 7px 16px; }
+.aviso .deshacer { padding: 8px 13px; border-radius: 10px; font-weight: 750; color: var(--bg); background: color-mix(in srgb, var(--bg) 18%, transparent); text-align: center; }
 .conectar { max-width: 480px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top, 0px)) var(--lado-d) 40px var(--lado-i); }
 .conectar .logo { width: 72px; height: 72px; border-radius: 18px; display: block; margin: 0 0 18px; }
 .conectar h1 { font-family: var(--f-titulo); font-size: 32px; font-weight: 750; margin: 0 0 8px; letter-spacing: -.025em; }
@@ -672,7 +688,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.7';
+  var VERSION = '4.8';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -711,7 +727,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     devolver: '<path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
     hoja: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/>',
     paleta: '<path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/>',
-    salir: '<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>'
+    salir: '<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>',
+    enlace: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>'
   };
   var formato = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
   // Colores a elegir: clave, nombre y los dos tonos de la muestra (billete y color de acción).
@@ -872,9 +889,23 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   function avisar(t) {
     var a = $('aviso');
     a.textContent = t;
+    a.classList.remove('con-boton');
     a.classList.add('visible');
     clearTimeout(temporizador);
     temporizador = setTimeout(function () { a.classList.remove('visible'); }, 3000);
+  }
+  // Un aviso con un botón, como «Gasto borrado · Deshacer». Dura lo mismo que tarda en borrarse de verdad.
+  function avisarConBoton(t, boton, alTocar, ms) {
+    var a = $('aviso');
+    a.textContent = '';
+    a.appendChild(el('span', '', t));
+    var b = el('button', 'deshacer', boton);
+    b.type = 'button';
+    b.onclick = function () { a.classList.remove('visible', 'con-boton'); alTocar(); };
+    a.appendChild(b);
+    a.classList.add('visible', 'con-boton');
+    clearTimeout(temporizador);
+    temporizador = setTimeout(function () { a.classList.remove('visible', 'con-boton'); }, ms);
   }
 
   // ── Colores de las categorías ──
@@ -946,6 +977,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     });
     elem.addEventListener('click', function (e) {
       if (disparado) { disparado = false; e.preventDefault(); return; }
+      if (elem.dataset.deslizado) { e.preventDefault(); return; }  // Ha sido un deslizamiento, no un toque.
       alTocar();
     });
     elem.addEventListener('contextmenu', function (e) {
@@ -957,6 +989,100 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   document.addEventListener('pointerup', function () {
     if (ignorarClic) setTimeout(function () { ignorarClic = false; }, 80);
   }, true);
+
+  // ── Deslizar una fila ──
+  // A la izquierda, borrar (con «Deshacer»); a la derecha, cambiar la categoría. Arriba y abajo sigue siendo bajar la lista.
+  function deslizable(elem, izquierda, derecha) {
+    var x0 = 0, y0 = 0, dx = 0, ancho = 0, puntero = null, activo = false, decidido = false, rojo = null, color = null;
+    function capa(clase, icono, texto) {
+      var a = el('span', 'accion ' + clase);
+      a.setAttribute('aria-hidden', 'true');
+      a.innerHTML = svg(icono, 19);
+      a.appendChild(el('span', '', texto));
+      elem.appendChild(a);
+      return a;
+    }
+    function umbral() { return Math.min(110, ancho * 0.3); }
+    function mover(v) {
+      dx = v;
+      elem.style.setProperty('--dx', v + 'px');
+      if (rojo) { rojo.style.width = Math.max(0, -v) + 'px'; rojo.classList.toggle('listo', -v >= umbral()); }
+      if (color) { color.style.width = Math.max(0, v) + 'px'; color.classList.toggle('listo', v >= umbral()); }
+    }
+    elem.classList.add('desliza');
+    elem.volver = function () { elem.classList.remove('arrastrando'); mover(0); };
+    elem.addEventListener('pointerdown', function (e) {
+      if (e.button || menuAbierto) return;
+      x0 = e.clientX; y0 = e.clientY; puntero = e.pointerId; activo = true; decidido = false; ancho = elem.offsetWidth;
+    });
+    elem.addEventListener('pointermove', function (e) {
+      if (!activo || e.pointerId !== puntero) return;
+      var mx = e.clientX - x0, my = e.clientY - y0;
+      if (!decidido) {
+        if (Math.abs(mx) < 10 && Math.abs(my) < 10) return;
+        if (Math.abs(my) >= Math.abs(mx)) { activo = false; return; }  // Va hacia arriba o abajo: es bajar la lista.
+        decidido = true;
+        elem.classList.remove('apretando');
+        elem.classList.add('arrastrando');
+        try { elem.setPointerCapture(puntero); } catch (err) { /* Algunos navegadores no lo permiten: sigue igual. */ }
+        if (!rojo && izquierda) rojo = capa('borrar', 'borrar', 'Borrar');
+        if (!color && derecha) color = capa('cat', 'etiqueta', 'Categoría');
+      }
+      var v = mx > 0 ? mx - 10 : mx + 10;
+      if ((v > 0 && !derecha) || (v < 0 && !izquierda)) v = v * 0.2;  // Hacia donde no hay nada, se resiste.
+      mover(Math.max(-ancho, Math.min(ancho, v)));
+    });
+    function soltar() {
+      if (!activo) return;
+      activo = false;
+      if (!decidido) return;
+      elem.dataset.deslizado = '1';
+      setTimeout(function () { delete elem.dataset.deslizado; }, 350);
+      elem.classList.remove('arrastrando');
+      if (dx <= -umbral() && izquierda) { mover(-ancho); izquierda(); }
+      else if (dx >= umbral() && derecha) { mover(0); derecha(); }
+      else mover(0);
+    }
+    elem.addEventListener('pointerup', soltar);
+    elem.addEventListener('pointercancel', function () { if (activo && decidido) { activo = false; elem.volver(); } activo = false; });
+  }
+
+  // Borrar deslizando: la fila se va al momento, pero se borra de verdad al acabar el aviso, por si se toca «Deshacer».
+  var porBorrar = {};
+  var ESPERA_BORRAR = 4500;
+  function borrarDeslizando(id, fila, texto) {
+    setTimeout(function () { plegar(fila); }, 160);
+    porBorrar[id] = setTimeout(function () { borrarYa(id); }, ESPERA_BORRAR);
+    avisarConBoton(texto, 'Deshacer', function () {
+      clearTimeout(porBorrar[id]);
+      delete porBorrar[id];
+      porTodas(document.querySelectorAll('.fila[data-id="' + CSS.escape(String(id)) + '"]'), function (f) {
+        desplegar(f);
+        if (f.volver) f.volver();
+      });
+    }, ESPERA_BORRAR);
+  }
+  // Sin «despues»: no cierra lo que tengas abierto ni saca otro aviso, porque ya viste «Gasto borrado».
+  function borrarYa(id) {
+    clearTimeout(porBorrar[id]);
+    delete porBorrar[id];
+    API.borrar(id).then(function (r) {
+      if (esError(r)) throw new Error(r);
+      cargar(true);
+    }).catch(function (e) {
+      porTodas(document.querySelectorAll('.fila[data-id="' + CSS.escape(String(id)) + '"]'), function (f) { desplegar(f); if (f.volver) f.volver(); });
+      avisar(esError(e && e.message) ? e.message : 'No se pudo borrar. Inténtalo otra vez.');
+    });
+  }
+  // Si se cierra la app con algo pendiente de borrar, se borra ya.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) Object.keys(porBorrar).forEach(borrarYa);
+  });
+  // Una fila que se vuelve a pintar mientras espera a borrarse sale ya plegada.
+  function marcarFila(fila, id) {
+    fila.dataset.id = id;
+    if (porBorrar[id]) fila.classList.add('quitando');
+  }
 
   function abrirMenu(fila, items, alTocarCopia, porPulsacion) {
     cerrarHoja();
@@ -1428,6 +1554,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     if (g.categoria === SIN) der.appendChild(el('span', 'pastilla', 'Sin categoría'));
     fila.appendChild(der);
     pulsable(fila, function () { abrirDetalle(g); }, function (f, pulsado) { menuGasto(g, f, pulsado); });
+    deslizable(fila, function () { borrarDeslizando(g.id, fila, 'Gasto borrado'); }, function () { abrirCategorias(g); });
+    marcarFila(fila, g.id);
     return fila;
   }
 
@@ -1445,6 +1573,9 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     der.appendChild(el('span', 'importe entra', '+' + euros(i.importe)));
     fila.appendChild(der);
     pulsable(fila, function () { abrirDetalleIngreso(i); }, function (f, pulsado) { menuIngreso(i, f, pulsado); });
+    // Las entradas solo se borran deslizando: no tienen categoría propia, y lo de «devolución» está en su tique.
+    deslizable(fila, function () { borrarDeslizando(i.id, fila, 'Entrada borrada'); }, null);
+    marcarFila(fila, i.id);
     return fila;
   }
 
@@ -2193,6 +2324,20 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
         a.appendChild(t);
         lista.appendChild(a);
       }
+      // El mismo enlace que la celda B4: se pega al añadir los atajos, sin tener que abrir la hoja en el iPhone.
+      var enlace = el('button', 'opcion-mas');
+      enlace.innerHTML = svg('enlace', 24);
+      var te = el('span');
+      te.appendChild(el('b', '', 'Copiar el enlace para los atajos'));
+      te.appendChild(el('small', '', 'Se pega al añadir los atajos «Gastos» y «Revolut». No lo compartas.'));
+      enlace.appendChild(te);
+      enlace.onclick = function () {
+        var url = 'https://script.google.com/macros/s/' + conexion.u + '/exec?t=' + encodeURIComponent(conexion.t);
+        var hecho = function () { avisar('Copiado. Pégalo cuando el atajo te lo pida.'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(hecho, function () { avisar('No se pudo copiar.'); });
+        else avisar('Este navegador no deja copiar.');
+      };
+      if (conexion) lista.appendChild(enlace);
       var salir = el('button', 'opcion-mas rojo');
       salir.innerHTML = svg('salir', 24);
       var ts = el('span');
@@ -2207,7 +2352,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       };
       lista.appendChild(salir);
       c.appendChild(lista);
-      c.appendChild(el('p', 'ayuda centro', 'Consejo: mantén pulsado cualquier gasto para ver qué puedes hacer con él.'));
+      c.appendChild(el('p', 'ayuda centro', 'Consejo: desliza un gasto a la izquierda para borrarlo o a la derecha para cambiar su categoría. Si lo mantienes pulsado, verás todo lo que puedes hacer con él.'));
     });
   }
 
