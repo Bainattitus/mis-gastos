@@ -197,7 +197,7 @@ button, a, input { touch-action: manipulation; }
 button:focus-visible, a:focus-visible { outline: 2px solid var(--accent-texto); outline-offset: 2px; }
 .app { max-width: 520px; margin: 0 auto; padding-left: var(--lado-i); padding-right: var(--lado-d); transition: opacity .2s; }
 .app.cargando { opacity: .6; }
-.barra-estado { position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--billete-2); z-index: 30; pointer-events: none; }
+.barra-estado { position: fixed; inset: 0 0 auto; top: var(--fijo-arriba, 0px); height: env(safe-area-inset-top, 0px); background: var(--billete-2); z-index: 30; pointer-events: none; }
 
 /* ── El billete ── */
 .billete {
@@ -380,7 +380,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 
 /* ── Barra de pestañas ── */
 .pestanas {
-  position: fixed; z-index: 8; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  position: fixed; z-index: 8; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--fijo-abajo, 0px));
   width: min(calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)), 440px); height: 66px; border-radius: 24px;
   background: var(--cristal); -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
   border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(8, 12, 40, .16);
@@ -423,26 +423,32 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .menu .peligro.confirmar svg { color: var(--card); }
 
 /* ── Hoja de abajo ── */
-.velo { position: fixed; inset: 0; background: var(--velo); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+/* Lo fijo se coloca con lo que de verdad se ve (ver ajustarVisible): --vv-abajo sube la hoja por encima del teclado
+   y --fijo-arriba/--fijo-abajo corrigen el desfase que deja a veces el iPhone al cerrar el teclado. Sin ellas, como siempre. */
+.velo { position: fixed; inset: 0; top: var(--fijo-arriba, 0px); bottom: var(--fijo-abajo, 0px); background: var(--velo); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
 .velo.abierto { opacity: 1; pointer-events: auto; }
 .hoja {
-  position: fixed; left: 0; right: 0; bottom: 0; max-width: 520px; margin: 0 auto; background: var(--card); z-index: 21;
+  position: fixed; left: 0; right: 0; bottom: var(--vv-abajo, 0px); max-width: 520px; margin: 0 auto; background: var(--card); z-index: 21;
   border-radius: 28px 28px 0 0; padding: 0 var(--lado-d) calc(22px + env(safe-area-inset-bottom, 0px)) var(--lado-i);
-  transform: translateY(105%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); max-height: 90vh; overflow: auto; overscroll-behavior: contain;
+  transform: translateY(105%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); overflow: auto; overscroll-behavior: contain;
+  /* Arriba siempre queda un hueco bajo la hora, para que la X se pueda tocar. Con el teclado abierto, el hueco es menor. */
+  max-height: 86vh; max-height: calc(var(--vv-alto, 100dvh) - env(safe-area-inset-top, 0px) - var(--hueco-arriba, 48px));
 }
 .hoja.abierta { transform: none; }
 /* Arriba de la hoja: el asa en el centro y la X a la derecha, fijas aunque se baje. */
 .hoja-arriba {
   position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  margin: 0 calc(-1 * var(--lado-d)) 4px calc(-1 * var(--lado-i)); padding: 8px calc(var(--lado-d) - 4px) 4px var(--lado-i);
+  margin: 0 calc(-1 * var(--lado-d)) 4px calc(-1 * var(--lado-i)); padding: 12px calc(var(--lado-d) - 4px) 6px var(--lado-i);
   background: var(--card);
 }
 .asa { grid-column: 2; width: 40px; height: 5px; border-radius: 99px; background: var(--line); }
 .cerrar-hoja {
-  grid-column: 3; justify-self: end; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--track); color: var(--ink-2); transition: transform .15s;
+  grid-column: 3; justify-self: end; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--track); color: var(--ink-2); transition: transform .15s; position: relative;
 }
-.cerrar-hoja svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+/* El dedo tiene más sitio que el círculo: 48 px para acertar sin apuntar. */
+.cerrar-hoja::after { content: ""; position: absolute; inset: -5px; }
+.cerrar-hoja svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 .cerrar-hoja:active { transform: scale(.9); }
 .hoja h3 { font-family: var(--f-titulo); font-size: 24px; font-weight: 750; letter-spacing: -.02em; margin: 0 0 8px; word-break: break-word; text-wrap: balance; }
 .campo { display: block; font-size: 13px; color: var(--muted); font-weight: 650; margin: 16px 0 7px; }
@@ -454,6 +460,19 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
 .opcion { padding: 9px 13px; border-radius: 99px; background: var(--track); font-size: 14px; font-weight: 650; }
 .opcion.elegida { background: var(--accent); color: var(--accent-ink); }
+/* «＋ Nueva» al final de las categorías y su cajita para crear una en el momento. */
+.opcion.nueva { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--accent-texto); }
+.crear-cat { margin-top: 12px; padding: 14px; border-radius: 18px; background: var(--track); }
+.crear-cat .campo { margin-top: 0; }
+.crear-cat .entrada { font-size: 16px; padding: 12px 14px; background: var(--card); }
+.emojis { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; margin-top: 10px; }
+.emojis button { height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 21px; line-height: 1; background: var(--card); text-align: center; }
+.emojis button.elegida { box-shadow: inset 0 0 0 2px var(--accent-texto); background: var(--accent-soft); }
+.crear-cat .botones { display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-top: 12px; }
+.crear-cat .botones button { padding: 13px 16px; border-radius: 14px; font-weight: 650; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crear-cat .cancelar { background: var(--card); color: var(--ink-2); }
+.crear-cat .crear { background: var(--accent); color: var(--accent-ink); }
+.crear-cat .crear:disabled { opacity: .5; }
 .principal { width: 100%; margin-top: 20px; padding: 16px; border-radius: 16px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; text-align: center; }
 .principal:disabled { opacity: .5; }
 .peligro-b { width: 100%; margin-top: 12px; padding: 14px; border-radius: 14px; color: var(--bad); font-weight: 650; text-align: center; }
@@ -498,7 +517,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 
 /* ── Avisos, conexión e instalación ── */
 .aviso {
-  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px);
+  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px) + var(--vv-abajo, 0px)); transform: translate(-50%, 16px);
   background: var(--ink); color: var(--bg); padding: 12px 16px; border-radius: 14px; font-size: 15px; font-weight: 600;
   opacity: 0; transition: opacity .25s, transform .25s; z-index: 50; width: max-content; max-width: calc(100% - 32px); text-align: center; pointer-events: none;
 }
@@ -688,7 +707,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.8';
+  var VERSION = '4.9';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -699,13 +718,15 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   var DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   var EMOJI = {
     'supermercado': '🛒', 'comer fuera': '🍽️', 'tomar algo': '🍺', 'transporte': '🚇', 'gasolina': '⛽', 'compras': '🛍️', 'ropa': '👕',
-    'ocio': '🎬', 'salud': '💊', 'hogar': '🏠', 'recibos': '💡', 'suscripciones': '🔁', 'viajes': '✈️',
+    'ocio': '🎬', 'salud': '💊', 'hogar': '🏠', 'recibos': '💡', 'suscripciones': '🔁', 'viajes': '✈️', 'viaje': '✈️',
     'regalos': '🎁', 'otros': '📦', 'sin categoria': '❓'
   };
+  // Para elegir al crear una categoría desde la app. El primero es el de siempre.
+  var EMOJIS_NUEVA = ['🏷️', '✈️', '🐶', '🐱', '👶', '🎓', '📚', '💻', '🎮', '⚽', '🏋️', '💇', '💄', '🚗', '🛠️', '🎉', '🌱', '💼'];
   // Cada categoría conocida tiene su hueco fijo en la paleta (1 a 8), para que no cambie de color de un mes a otro.
   var COLOR_CAT = {
     'supermercado': 3, 'comer fuera': 2, 'tomar algo': 4, 'transporte': 1, 'gasolina': 4, 'compras': 5, 'ropa': 7, 'ocio': 8,
-    'salud': 6, 'hogar': 4, 'recibos': 1, 'suscripciones': 7, 'viajes': 1, 'regalos': 5
+    'salud': 6, 'hogar': 4, 'recibos': 1, 'suscripciones': 7, 'viajes': 1, 'viaje': 1, 'regalos': 5
   };
   var NEUTRAS = { 'otros': true, 'sin categoria': true, 'resto': true };
   var CUENTAS = [['Personal', '👤 Mía'], ['Conjunta', '👫 Conjunta']];
@@ -793,7 +814,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     repetir: function (id, cada) { return llamar('repetir', [id, cada]); },
     cambiarFijo: function (fila, concepto, importe) { return llamar('cambiarFijo', [fila, concepto, importe]); },
     dejarFijo: function (fila, concepto) { return llamar('dejarFijo', [fila, concepto]); },
-    editar: function (id, cambios) { return llamar('editar', [id, cambios]); }
+    editar: function (id, cambios) { return llamar('editar', [id, cambios]); },
+    crearCategoria: function (nombre, emoji) { return llamar('crearCategoria', [nombre, emoji]); }
   };
 
   var est = {
@@ -828,7 +850,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   }
   function porTodas(lista, fn) { Array.prototype.forEach.call(lista, fn); }
   function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
-  function emoji(c) { return EMOJI[norm(c)] || '🏷️'; }
+  // El de la columna Emoji de la hoja manda; si no hay, uno según el nombre.
+  function emoji(c) { return (est.datos && est.datos.emojis && est.datos.emojis[c]) || EMOJI[norm(c)] || '🏷️'; }
   function euros(n) { return formato.format(n || 0); }
   function coma(n) { return Number(n || 0).toFixed(2).replace('.', ','); }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -1916,12 +1939,15 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     $('hoja').classList.add('abierta');
   }
   function cerrarHoja() {
+    // Si había un campo escribiéndose, se suelta: así el teclado se va con la hoja y no se queda abierto encima de la app.
+    var activo = document.activeElement;
+    if (activo && activo !== document.body && $('hoja').contains(activo) && activo.blur) activo.blur();
     $('velo').classList.remove('abierto');
     $('hoja').classList.remove('abierta');
   }
   function opciones(lista, actual, alElegir) {
     var ops = el('div', 'opciones');
-    lista.forEach(function (o) {
+    function boton(o) {
       var b = el('button', 'opcion' + (o[0] === actual ? ' elegida' : ''), o[1]);
       b.type = 'button';
       b.onclick = function () {
@@ -1929,13 +1955,129 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
         b.classList.add('elegida');
         alElegir(o[0]);
       };
-      ops.appendChild(b);
-    });
+      b._valor = o[0];
+      return b;
+    }
+    lista.forEach(function (o) { ops.appendChild(boton(o)); });
+    // Para elegir una por su valor, o añadirla delante de «antes» y elegirla (una categoría recién creada).
+    ops.elegir = function (valor) {
+      var b = Array.prototype.filter.call(ops.children, function (x) { return x._valor === valor; })[0];
+      if (b) b.click();
+      return !!b;
+    };
+    ops.anadir = function (o, antes) {
+      var b = boton(o);
+      ops.insertBefore(b, antes || null);
+      b.click();
+    };
     return ops;
   }
   function listaCategorias(primera) {
     var lista = primera ? [primera] : [];
     return lista.concat(est.datos.listaCategorias.map(function (c) { return [c, emoji(c) + ' ' + c]; }));
+  }
+  // Las categorías para elegir, con «＋ Nueva» al final: crea una en el momento, con su emoji, y la deja elegida.
+  function opcionesCategoria(primera, actual, alElegir) {
+    var caja = el('div');
+    var ops = opciones(listaCategorias(primera), actual, alElegir);
+    var nueva = el('button', 'opcion nueva', '＋ Nueva');
+    nueva.type = 'button';
+    nueva.setAttribute('aria-label', 'Crear una categoría nueva');
+    ops.appendChild(nueva);
+    caja.appendChild(ops);
+    var panel = null;
+    function quitarPanel() {
+      if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
+      panel = null;
+    }
+    nueva.onclick = function () {
+      if (!panel) {
+        panel = formNuevaCategoria(function (nombre) {
+          quitarPanel();
+          if (!ops.elegir(nombre)) ops.anadir([nombre, emoji(nombre) + ' ' + nombre], nueva);
+        }, quitarPanel);
+        caja.appendChild(panel);
+      }
+      // Dentro del toque, para que el iPhone saque el teclado.
+      panel.querySelector('input').focus();
+      // La hoja baja lo justo para que se vea la cajita entera, sin pasarse de su principio.
+      var hoja = $('hoja'), r = panel.getBoundingClientRect(), h = hoja.getBoundingClientRect();
+      if (r.bottom > h.bottom - 16) hoja.scrollTop += Math.max(0, Math.min(r.bottom - (h.bottom - 16), r.top - (h.top + 64)));
+    };
+    return caja;
+  }
+  function formNuevaCategoria(alCrear, alCancelar) {
+    var p = el('div', 'crear-cat');
+    p.appendChild(el('label', 'campo', 'Nueva categoría'));
+    var nombre = el('input', 'entrada');
+    nombre.type = 'text';
+    nombre.maxLength = 30;
+    nombre.autocomplete = 'off';
+    nombre.placeholder = 'Por ejemplo, Mascota';
+    nombre.setAttribute('autocapitalize', 'sentences');
+    nombre.setAttribute('enterkeyhint', 'done');
+    nombre.setAttribute('aria-label', 'Nombre de la categoría nueva');
+    p.appendChild(nombre);
+    var icono = EMOJIS_NUEVA[0], tocado = false;
+    var rejilla = el('div', 'emojis');
+    rejilla.setAttribute('role', 'group');
+    rejilla.setAttribute('aria-label', 'Emoji de la categoría');
+    EMOJIS_NUEVA.forEach(function (e) {
+      var b = el('button', e === icono ? 'elegida' : '', e);
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Emoji ' + e);
+      b.onclick = function () { tocado = true; ponerIcono(e); };
+      rejilla.appendChild(b);
+    });
+    p.appendChild(rejilla);
+    var botones = el('div', 'botones');
+    var cancelar = el('button', 'cancelar', 'Cancelar');
+    cancelar.type = 'button';
+    cancelar.onclick = function () { nombre.blur(); alCancelar(); };
+    var crear = el('button', 'crear');
+    crear.type = 'button';
+    botones.appendChild(cancelar);
+    botones.appendChild(crear);
+    p.appendChild(botones);
+    function texto() { return capital(nombre.value.replace(/\s+/g, ' ').trim()); }
+    function ponerIcono(e) {
+      icono = e;
+      porTodas(rejilla.children, function (b) { b.classList.toggle('elegida', b.textContent === e); });
+      pintarBoton();
+    }
+    function pintarBoton() { crear.textContent = 'Crear ' + icono + (texto() ? ' ' + texto() : ''); }
+    // Si el nombre es de los conocidos («Viajes»), propone su emoji, mientras no se haya elegido otro a mano.
+    nombre.oninput = function () { if (!tocado) ponerIcono(EMOJI[norm(texto())] || EMOJIS_NUEVA[0]); else pintarBoton(); };
+    nombre.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); hacer(); } });
+    crear.onclick = hacer;
+    pintarBoton();
+    function hacer() {
+      var n = texto();
+      if (!/[a-zA-Z0-9À-ÿ]/.test(n)) { nombre.focus(); avisar('Escribe el nombre de la categoría'); return; }
+      if (norm(n) === norm(SIN)) { nombre.focus(); avisar('Ese nombre no vale: elige otro'); return; }
+      var ya = est.datos.listaCategorias.filter(function (c) { return norm(c) === norm(n); })[0];
+      if (ya) { nombre.blur(); avisar('Ya tenías «' + ya + '»: queda elegida'); alCrear(ya); return; }
+      crear.disabled = true;
+      crear.textContent = 'Creando…';
+      API.crearCategoria(n, icono).then(function (r) {
+        if (esError(r)) throw new Error(r);
+        if (!r || !r.nombre) throw new Error('sin respuesta');
+        if (est.datos.listaCategorias.indexOf(r.nombre) < 0) est.datos.listaCategorias.push(r.nombre);
+        if (r.emoji) {
+          est.datos.emojis = est.datos.emojis || {};
+          est.datos.emojis[r.nombre] = r.emoji;
+        }
+        nombre.blur();
+        avisar(r.nueva === false ? 'Ya tenías «' + r.nombre + '»: queda elegida' : 'Categoría «' + r.nombre + '» creada');
+        alCrear(r.nombre);
+      }).catch(function (e) {
+        crear.disabled = false;
+        pintarBoton();
+        var m = (e && e.message) || '';
+        avisar(/no conoce/.test(m) ? 'Para crear categorías falta pegar el código nuevo en tu hoja.' : esError(m) ? m : 'No se pudo crear. Inténtalo otra vez.');
+      });
+    }
+    return p;
   }
   function segmentado(lista, actual, alElegir) {
     var s = el('div', 'segmentado');
@@ -2024,7 +2166,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var com = campoTexto(c, '¿Dónde?', false, inicial ? 'Por ejemplo, Netflix' : 'Por ejemplo, Mercadona o Bizum a Mireia');
     c.appendChild(el('label', 'campo', 'Categoría'));
     var cat = inicial && est.datos.listaCategorias.indexOf('Suscripciones') >= 0 ? 'Suscripciones' : '';
-    c.appendChild(opciones(listaCategorias(['', '✨ Automática']), cat, function (v) { cat = v; }));
+    c.appendChild(opcionesCategoria(['', '✨ Automática'], cat, function (v) { cat = v; }));
     var cuenta = est.vista === 'conjunta' ? CONJUNTA : 'Personal';
     c.appendChild(el('label', 'campo', 'Cuenta'));
     c.appendChild(opciones(CUENTAS, cuenta, function (v) { cuenta = v; }));
@@ -2104,7 +2246,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   function abrirCategorias(g) {
     abrirHoja(function (c) {
       c.appendChild(el('h3', '', 'Categoría de «' + g.comercio + '»'));
-      c.appendChild(opciones(listaCategorias(null), g.categoria, function (cat) {
+      c.appendChild(opcionesCategoria(null, g.categoria, function (cat) {
         if (cat !== g.categoria) despues(API.cambiar(g.id, cat), 'No se pudo cambiar. Inténtalo otra vez.');
       }));
       c.appendChild(el('p', 'ayuda', 'Al cambiarla, los próximos gastos de «' + g.comercio + '» irán solos a esa categoría.'));
@@ -2180,7 +2322,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       c.appendChild(acc);
 
       c.appendChild(el('label', 'campo', 'Cambiar categoría'));
-      c.appendChild(opciones(listaCategorias(null), g.categoria, function (cat) {
+      c.appendChild(opcionesCategoria(null, g.categoria, function (cat) {
         if (cat !== g.categoria) despues(API.cambiar(g.id, cat), 'No se pudo cambiar. Inténtalo otra vez.');
       }));
       c.appendChild(el('p', 'ayuda', 'Al cambiarla, los próximos gastos de «' + g.comercio + '» irán solos a esa categoría.'));
@@ -2492,6 +2634,70 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
         location.reload();
       })
       .catch(function () { return null; });
+  }
+
+  // ── Lo que se ve con el teclado del iPhone ──
+  // Con el teclado abierto, la hoja de abajo se pone encima de él y se encoge a lo que se ve, para que la X y el campo
+  // no queden tapados. Además, iOS 26 y 27 a veces dejan lo fijo desplazado al cerrar el teclado (la barra de abajo se
+  // queda subida): se compensa con lo que se ha movido la parte visible (offsetTop). Sin teclado ni desfase, no se toca nada.
+  var visible = window.visualViewport, ajustePendiente = false, ajusteAnterior = '';
+  var VARIABLES_VISIBLE = ['--vv-alto', '--vv-abajo', '--hueco-arriba', '--fijo-arriba', '--fijo-abajo'];
+  function esCampo(e) {
+    return !!e && (e.tagName === 'TEXTAREA' || (e.tagName === 'INPUT' && !/^(button|checkbox|radio|range|submit|reset|color|file|hidden|image)$/i.test(e.type)));
+  }
+  function ajustarVisible() {
+    ajustePendiente = false;
+    if (!visible) return;
+    var alto = window.innerHeight, arriba = Math.max(0, Math.round(visible.offsetTop)), vista = Math.round(visible.height);
+    var zoom = Math.abs((visible.scale || 1) - 1) > 0.01;
+    var teclado = !zoom && esCampo(document.activeElement) && alto - vista > 120;
+    var v = {};
+    if (teclado) v = { '--vv-alto': vista, '--vv-abajo': Math.max(0, alto - arriba - vista), '--hueco-arriba': 12 };
+    else if (!zoom && arriba > 0) v = { '--vv-abajo': -arriba, '--fijo-arriba': arriba, '--fijo-abajo': -arriba };
+    var clave = JSON.stringify(v);
+    if (clave === ajusteAnterior) return;
+    ajusteAnterior = clave;
+    var raiz = document.documentElement.style;
+    VARIABLES_VISIBLE.forEach(function (k) {
+      if (Object.prototype.hasOwnProperty.call(v, k)) raiz.setProperty(k, v[k] + 'px'); else raiz.removeProperty(k);
+    });
+    // Solo cuando cambia (se abre el teclado o cambia de tamaño): si no, no dejaría bajar la hoja mientras se escribe.
+    if (teclado) verCampo();
+  }
+  function programarAjuste() {
+    if (ajustePendiente || !visible) return;
+    ajustePendiente = true;
+    window.requestAnimationFrame(ajustarVisible);
+    // Por si el fotograma no llega (la app en segundo plano): que no se quede sin ajustar.
+    setTimeout(function () { if (ajustePendiente) ajustarVisible(); }, 120);
+  }
+  // Que el campo en el que se escribe se vea dentro de la hoja, por debajo de la franja de la X.
+  function verCampo() {
+    var a = document.activeElement, hoja = $('hoja');
+    if (!esCampo(a) || !hoja.contains(a)) return;
+    var r = a.getBoundingClientRect(), h = hoja.getBoundingClientRect();
+    var tope = h.top + 64, fondo = h.bottom - 16;
+    if (r.bottom > fondo) hoja.scrollTop += r.bottom - fondo;
+    else if (r.top < tope) hoja.scrollTop -= tope - r.top;
+  }
+  if (visible) {
+    visible.addEventListener('resize', programarAjuste);
+    visible.addEventListener('scroll', programarAjuste);
+    window.addEventListener('resize', programarAjuste);
+    window.addEventListener('scroll', programarAjuste, { passive: true });
+    document.addEventListener('focusin', function () { programarAjuste(); setTimeout(verCampo, 350); });
+    document.addEventListener('focusout', function () {
+      setTimeout(programarAjuste, 60);
+      // Ya sin teclado, si la parte visible sigue movida, un toque de un píxel al scroll para que el iPhone la recoloque.
+      setTimeout(function () {
+        if (esCampo(document.activeElement) || visible.offsetTop < 1) return;
+        var y = window.scrollY;
+        window.scrollTo(window.scrollX, y + 1);
+        window.scrollTo(window.scrollX, y);
+        programarAjuste();
+      }, 450);
+    });
+    programarAjuste();
   }
 
   // Al volver a la app (por ejemplo, después de pagar), trae lo último si han pasado más de 20 segundos.
