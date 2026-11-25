@@ -431,8 +431,10 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   position: fixed; left: 0; right: 0; bottom: var(--vv-abajo, 0px); max-width: 520px; margin: 0 auto; background: var(--card); z-index: 21;
   border-radius: 28px 28px 0 0; padding: 0 var(--lado-d) calc(22px + env(safe-area-inset-bottom, 0px)) var(--lado-i);
   transform: translateY(105%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); overflow: auto; overscroll-behavior: contain;
-  /* Arriba siempre queda un hueco bajo la hora, para que la X se pueda tocar. Con el teclado abierto, el hueco es menor. */
-  max-height: 86vh; max-height: calc(var(--vv-alto, 100dvh) - env(safe-area-inset-top, 0px) - var(--hueco-arriba, 48px));
+  /* Arriba siempre queda un hueco bajo la hora, para que la X se pueda tocar. Con el teclado abierto, el hueco es menor.
+     El 100 % es el sitio que de verdad deja el iPhone (lo mismo que mide «bottom: 0»), no la pantalla entera: si el iPhone
+     encoge la app tras el teclado, la hoja se encoge con ella y la X no se mete debajo de la hora. */
+  max-height: 86%; max-height: calc(var(--vv-alto, 100%) - env(safe-area-inset-top, 0px) - var(--hueco-arriba, 48px));
 }
 .hoja.abierta { transform: none; }
 /* Arriba de la hoja: el asa en el centro y la X a la derecha, fijas aunque se baje. */
@@ -537,7 +539,9 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .qr { background: #fff; padding: 10px; border-radius: 12px; width: 168px; height: 168px; margin: 12px 0 4px; }
 .qr img, .qr svg { display: block; width: 100%; height: 100%; }
 
-.pagina { animation: entrar .25s ease; }
+/* Solo al cambiar de pestaña (clase «entra», ver pintar): así no se repite cuando la app se vuelve a medir (curarAlto). */
+.pagina.entra { animation: entrar .25s ease; }
+.medida { position: fixed; inset: 0; visibility: hidden; pointer-events: none; z-index: -1; }
 @keyframes entrar { from { transform: translateY(8px); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation: none !important; }
@@ -702,12 +706,13 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 </div>
 <div class="capa-menu" id="capa-menu" hidden><div class="fondo" id="menu-fondo"></div></div>
 <div class="aviso" id="aviso" role="status"></div>
+<div class="medida" id="medida" aria-hidden="true"></div>
 
 <script>
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.9';
+  var VERSION = '4.9.1';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1280,7 +1285,11 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   var SUBS = ['categorias', 'dias', 'donde', 'meses'];
   function pintar() {
     var p = est.pestana, d = vista();
-    PESTANAS.forEach(function (n) { $('pagina-' + n).hidden = n !== p; });
+    PESTANAS.forEach(function (n) {
+      var pg = $('pagina-' + n), estaba = !pg.hidden;
+      pg.hidden = n !== p;
+      if (!estaba && !pg.hidden) { pg.classList.remove('entra'); void pg.offsetWidth; pg.classList.add('entra'); }
+    });
     porTodas(document.querySelectorAll('.pestana'), function (b) {
       var activa = b.getAttribute('data-pestana') === p;
       b.classList.toggle('activa', activa);
@@ -1944,6 +1953,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     if (activo && activo !== document.body && $('hoja').contains(activo) && activo.blur) activo.blur();
     $('velo').classList.remove('abierto');
     $('hoja').classList.remove('abierta');
+    setTimeout(curarAlto, 350);
   }
   function opciones(lista, actual, alElegir) {
     var ops = el('div', 'opciones');
@@ -2680,6 +2690,45 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     if (r.bottom > fondo) hoja.scrollTop += r.bottom - fondo;
     else if (r.top < tope) hoja.scrollTop -= tope - r.top;
   }
+  // ── El iPhone encoge la app tras el teclado ──
+  // Con la app en la pantalla de inicio, después de usar el teclado iOS a veces la deja unos 60 px más baja hasta cerrarla
+  // del todo: abajo queda una franja vacía y la barra de pestañas y las ventanas suben. El remedio conocido es que el iPhone
+  // la vuelva a medir: se quita y se pone el contenido en el mismo instante (no llega a verse) y el scroll queda donde estaba.
+  // La altura buena es la más alta vista con este ancho (se guarda por si la app se recarga) o, en vertical, la de la pantalla.
+  var GUARDADO_ALTO = 'bycash-alto', medidaAlto = { w: window.innerWidth, a: window.innerHeight };
+  try {
+    var altoGuardado = JSON.parse(window.sessionStorage.getItem(GUARDADO_ALTO) || 'null');
+    if (altoGuardado && altoGuardado.w === medidaAlto.w) medidaAlto.a = Math.max(medidaAlto.a, altoGuardado.a);
+  } catch (e) { /* sin memoria: se mide desde ahora */ }
+  function anotarAlto() {
+    if (window.innerWidth !== medidaAlto.w) medidaAlto = { w: window.innerWidth, a: window.innerHeight };
+    else if (window.innerHeight > medidaAlto.a) medidaAlto.a = window.innerHeight;
+    else return;
+    try { window.sessionStorage.setItem(GUARDADO_ALTO, JSON.stringify(medidaAlto)); } catch (e) { return; }
+  }
+  function altoBueno() {
+    var a = medidaAlto.w === window.innerWidth ? medidaAlto.a : window.innerHeight;
+    var vertical = window.screen && window.screen.height > window.screen.width && window.innerWidth === window.screen.width;
+    return vertical ? Math.max(a, window.screen.height) : a;
+  }
+  function curarAlto() {
+    if (window.navigator.standalone !== true || esCampo(document.activeElement)) return;
+    var falta = altoBueno() - window.innerHeight;
+    if (falta <= 4 || falta > 200) return;
+    var y = window.scrollY;
+    [$('app'), $('medida')].forEach(function (e) {
+      e.style.display = 'none';
+      void e.offsetHeight;
+      e.style.display = '';
+    });
+    window.scrollTo(window.scrollX, y);
+    programarAjuste();
+  }
+  window.addEventListener('resize', anotarAlto);
+  PESTANAS.forEach(function (n) {
+    $('pagina-' + n).addEventListener('animationend', function () { this.classList.remove('entra'); });
+  });
+
   if (visible) {
     visible.addEventListener('resize', programarAjuste);
     visible.addEventListener('scroll', programarAjuste);
@@ -2687,6 +2736,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     window.addEventListener('scroll', programarAjuste, { passive: true });
     document.addEventListener('focusin', function () { programarAjuste(); setTimeout(verCampo, 350); });
     document.addEventListener('focusout', function () {
+      setTimeout(curarAlto, 150);
+      setTimeout(curarAlto, 600);
       setTimeout(programarAjuste, 60);
       // Ya sin teclado, si la parte visible sigue movida, un toque de un píxel al scroll para que el iPhone la recoloque.
       setTimeout(function () {
@@ -2702,6 +2753,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 
   // Al volver a la app (por ejemplo, después de pagar), trae lo último si han pasado más de 20 segundos.
   document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) setTimeout(curarAlto, 300);
     if (!document.hidden && (conexion || window.API_PRUEBA) && !$('app').hidden && Date.now() - ultimaCarga > 20000) {
       buscarVersionNueva();
       cargar();
