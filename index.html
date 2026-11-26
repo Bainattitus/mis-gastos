@@ -36,7 +36,7 @@
   --bg: #eef1f7; --card: #ffffff; --ink: #10163a; --ink-2: #474f6e; --muted: #6b7290; --line: #e3e7f0; --track: #e9edf5;
   --accent: #2550e0; --accent-ink: #ffffff; --accent-soft: #e6ecfd;
   --billete: #2149d6; --billete-2: #14329b; --billete-ink: #ffffff; --billete-tenue: rgba(255, 255, 255, .78);
-  --billete-boton: rgba(255, 255, 255, .16); --billete-pista: rgba(5, 12, 56, .28); --billete-mal: #ffb3a6;
+  --billete-boton: rgba(255, 255, 255, .16); --billete-pista: rgba(5, 12, 56, .28); --billete-mal: #ffa497; --billete-bien: #9df2c0;
   --guilloche: rgba(255, 255, 255, .2); --seg-activo: #ffffff; --seg-activo-ink: #14329b;
   --papel: #fbf7ee; --papel-linea: #e4dccb; --papel-ink: #1d1b16; --papel-tenue: #7a7366; --sombra-papel: rgba(16, 22, 58, .14);
   --plastico: #434a5e; --plastico-2: #161a26; --plastico-ink: #ffffff; --oro: #e9d9a6; --oro-2: #b69a4f;
@@ -61,7 +61,7 @@
     --bg: #090c14; --card: #141924; --ink: #edf0f8; --ink-2: #c3c9db; --muted: #8e96ad; --line: #232a38; --track: #1d2331;
     --accent: #7d9dff; --accent-ink: #090c14; --accent-soft: #1a2446;
     --billete: #1c2f7e; --billete-2: #0e1847; --billete-ink: #ffffff; --billete-tenue: rgba(225, 232, 255, .76);
-    --billete-boton: rgba(255, 255, 255, .1); --billete-pista: rgba(0, 0, 0, .32); --billete-mal: #ff9d8f;
+    --billete-boton: rgba(255, 255, 255, .1); --billete-pista: rgba(0, 0, 0, .32); --billete-mal: #ff7466; --billete-bien: #7fe3a5;
     --guilloche: rgba(150, 178, 255, .2); --seg-activo: rgba(255, 255, 255, .18); --seg-activo-ink: #ffffff;
     --papel: #1c2130; --papel-linea: #30384a; --papel-ink: #edf0f8; --papel-tenue: #98a0b6; --sombra-papel: rgba(0, 0, 0, .5);
     --plastico: #565e78; --plastico-2: #1f2433; --plastico-ink: #ffffff; --oro: #e9d9a6; --oro-2: #b69a4f;
@@ -78,7 +78,7 @@
   --bg: #090c14; --card: #141924; --ink: #edf0f8; --ink-2: #c3c9db; --muted: #8e96ad; --line: #232a38; --track: #1d2331;
   --accent: #7d9dff; --accent-ink: #090c14; --accent-soft: #1a2446;
   --billete: #1c2f7e; --billete-2: #0e1847; --billete-ink: #ffffff; --billete-tenue: rgba(225, 232, 255, .76);
-  --billete-boton: rgba(255, 255, 255, .1); --billete-pista: rgba(0, 0, 0, .32); --billete-mal: #ff9d8f;
+  --billete-boton: rgba(255, 255, 255, .1); --billete-pista: rgba(0, 0, 0, .32); --billete-mal: #ff7466; --billete-bien: #7fe3a5;
   --guilloche: rgba(150, 178, 255, .2); --seg-activo: rgba(255, 255, 255, .18); --seg-activo-ink: #ffffff;
   --papel: #1c2130; --papel-linea: #30384a; --papel-ink: #edf0f8; --papel-tenue: #98a0b6; --sombra-papel: rgba(0, 0, 0, .5);
   --plastico: #565e78; --plastico-2: #1f2433; --plastico-ink: #ffffff; --oro: #e9d9a6; --oro-2: #b69a4f;
@@ -92,7 +92,7 @@
 }
 /* ── Colores a elegir. Cobalto es el de siempre (arriba). Cada uno cambia el billete, el color de acción y el calendario. ── */
 :root[data-color="esmeralda"] {
-  --bg: #edf3f0; --billete: #12855f; --billete-2: #0a573f; --seg-activo-ink: #0a573f;
+  --bg: #edf3f0; --billete: #12855f; --billete-2: #0a573f; --seg-activo-ink: #0a573f; --billete-bien: #d2ffe3;
   --accent: #0f8a61; --accent-ink: #ffffff; --accent-soft: #e0f3eb; --acento-sombra: rgba(15, 138, 97, .36);
   --h1: #b4e6d2; --h2: #5cc5a0; --h3: #17946b; --h4: #0b5e43;
 }
@@ -113,7 +113,7 @@
 }
 @media (prefers-color-scheme: dark) {
   :root[data-color="esmeralda"]:not([data-theme="light"]) {
-    --bg: #090c14; --billete: #0f5c44; --billete-2: #072e23; --seg-activo-ink: #ffffff; --guilloche: rgba(120, 230, 190, .18);
+    --bg: #090c14; --billete: #0f5c44; --billete-2: #072e23; --seg-activo-ink: #ffffff; --billete-bien: #b6f5cf; --guilloche: rgba(120, 230, 190, .18);
     --accent: #4fd1a1; --accent-ink: #07130f; --accent-soft: #12291f; --acento-sombra: rgba(0, 0, 0, .45);
     --h1: #0b5e43; --h2: #17946b; --h3: #5cc5a0; --h4: #b4e6d2;
   }
@@ -134,7 +134,7 @@
   }
 }
 :root[data-color="esmeralda"][data-theme="dark"] {
-  --bg: #090c14; --billete: #0f5c44; --billete-2: #072e23; --seg-activo-ink: #ffffff; --guilloche: rgba(120, 230, 190, .18);
+  --bg: #090c14; --billete: #0f5c44; --billete-2: #072e23; --seg-activo-ink: #ffffff; --billete-bien: #b6f5cf; --guilloche: rgba(120, 230, 190, .18);
   --accent: #4fd1a1; --accent-ink: #07130f; --accent-soft: #12291f; --acento-sombra: rgba(0, 0, 0, .45);
   --h1: #0b5e43; --h2: #17946b; --h3: #5cc5a0; --h4: #b4e6d2;
 }
@@ -158,6 +158,7 @@
   --bg: #f3f2ee; --card: #ffffff; --ink: #141416; --ink-2: #4a4950; --muted: #6f6d75; --line: #e6e4de; --track: #ecebe5;
   --billete: #2a2b30; --billete-2: #0e0f11; --seg-activo: #ffcc00; --seg-activo-ink: #111214; --guilloche: rgba(255, 204, 0, .2);
   --billete-barra: #ffcc00; --moneda: #ffcc00; --billete-pista: rgba(255, 255, 255, .13);
+  --billete-bien: #5fe394; --billete-mal: #ff5f56;
   --accent: #ffcc00; --accent-ink: #111214; --accent-soft: #fff3c4; --accent-texto: #141416; --acento-sombra: rgba(214, 160, 0, .4);
   --h1: #ffeaa0; --h2: #ffcc00; --h3: #d99a00; --h4: #8a5a00;
   --h1-ink: #141416; --h2-ink: #141416; --h3-ink: #141416; --h4-ink: #ffffff;
@@ -188,7 +189,9 @@ html, body { margin: 0; background: var(--bg); color: var(--ink); overscroll-beh
 html { -webkit-text-size-adjust: 100%; }
 body {
   font: 16px/1.4 var(--f-texto); -webkit-font-smoothing: antialiased;
-  padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  /* Siempre de alto como la pantalla, aunque haya poco (Fijos): así el iPhone mide bien lo de abajo. */
+  min-height: 100vh;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 input, textarea { -webkit-user-select: text; user-select: text; }
@@ -230,15 +233,24 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent-texto); 
 .etq-total { font-size: 14px; color: var(--billete-tenue); font-weight: 500; }
 .total { font-family: var(--f-titulo); font-weight: 750; font-size: 58px; letter-spacing: -.04em; line-height: 1; margin: 6px 0 0; white-space: nowrap; }
 .total small { font-size: .42em; font-weight: 650; letter-spacing: -.01em; margin-left: 2px; color: var(--billete-tenue); }
-.ritmo { margin-top: 18px; }
-.pista { position: relative; height: 10px; border-radius: 99px; background: var(--billete-pista); }
+/* El objetivo del mes: la barra se llena con lo gastado, verde si vas por debajo y roja si te pasas. Se toca para cambiarlo. */
+.objetivo { display: block; width: 100%; margin-top: 18px; color: var(--billete-tenue); border-radius: 12px; }
+.objetivo:active { opacity: .7; }
+.pista { display: block; position: relative; height: 10px; border-radius: 99px; background: var(--billete-pista); }
 .pista i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: var(--billete-barra); transition: width .5s ease; }
-.ritmo.pasado .pista i { background: var(--billete-mal); }
+.objetivo.bien .pista i { background: var(--billete-bien); }
+.objetivo.pasado .pista i { background: var(--billete-mal); }
 .marca-hoy { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 3px; background: var(--billete-ink); box-shadow: 0 0 0 2px var(--billete-2); }
-.ritmo-texto { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 9px; font-size: 14px; color: var(--billete-tenue); }
-.ritmo-texto b { color: var(--billete-ink); font-weight: 650; }
-.ritmo.pasado .ritmo-texto b { color: var(--billete-mal); }
-.ritmo-consejo { margin-top: 4px; font-size: 13px; color: var(--billete-tenue); }
+.obj-texto { display: flex; justify-content: space-between; align-items: baseline; gap: 2px 10px; flex-wrap: wrap; margin-top: 9px; font-size: 14px; }
+.obj-meta { display: inline-flex; align-items: center; gap: 5px; }
+.obj-meta b { color: var(--billete-ink); font-weight: 650; }
+.obj-meta svg { opacity: .75; }
+.obj-estado b { font-weight: 700; }
+.objetivo.bien .obj-estado { color: var(--billete-bien); }
+.objetivo.pasado .obj-estado { color: var(--billete-mal); }
+.ritmo-consejo { display: block; margin-top: 4px; font-size: 13px; }
+.objetivo.vacio { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 11px 14px; background: var(--billete-boton); color: var(--billete-ink); font-size: 14px; font-weight: 600; }
+.objetivo.vacio .ir { margin-left: auto; font-size: 20px; line-height: 1; opacity: .75; }
 .sin-pres { margin-top: 10px; font-size: 14px; color: var(--billete-tenue); }
 .sin-pres:empty { display: none; }
 .chips-billete { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
@@ -379,11 +391,15 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .lista-dia { padding: 4px 16px; margin-bottom: 6px; }
 
 /* ── Barra de pestañas ── */
+/* Pegada abajo del todo, de lado a lado, como la de las apps del iPhone (lo pidió Alex el 26/11). Los iconos quedan
+   justo encima de la rayita de inicio del iPhone; en pantallas anchas, centrados en 520 px como la app. */
 .pestanas {
-  position: fixed; z-index: 8; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--fijo-abajo, 0px));
-  width: min(calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)), 440px); height: 66px; border-radius: 24px;
+  --abajo: max(6px, env(safe-area-inset-bottom, 0px) - 10px);
+  --lado: max(8px, calc((100% - 520px) / 2));
+  position: fixed; z-index: 8; left: 0; right: 0; bottom: var(--fijo-abajo, 0px);
+  height: calc(58px + var(--abajo)); padding: 0 max(var(--lado), env(safe-area-inset-right, 0px)) var(--abajo) max(var(--lado), env(safe-area-inset-left, 0px));
   background: var(--cristal); -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
-  border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(8, 12, 40, .16);
+  border-top: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(8, 12, 40, .06);
   display: grid; grid-template-columns: 1fr 1fr 74px 1fr 1fr; align-items: center;
 }
 .pestana { height: 100%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 650; color: var(--muted); }
@@ -588,18 +604,15 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     <div id="billete-resumen">
       <div class="etq-total" id="total-etq">Llevas gastado</div>
       <div class="total" id="total">…</div>
-      <div class="ritmo" id="ritmo" hidden>
-        <div class="pista"><i id="ritmo-barra"></i><span class="marca-hoy" id="ritmo-hoy"></span></div>
-        <div class="ritmo-texto"><span id="ritmo-pres"></span><span id="ritmo-queda"></span></div>
-        <div class="ritmo-consejo" id="ritmo-consejo"></div>
-      </div>
       <div class="sin-pres" id="sin-pres"></div>
+      <button class="objetivo" id="obj-inicio" type="button"></button>
       <div class="chips-billete" id="chips-billete"></div>
     </div>
     <div id="billete-otro" hidden>
       <div class="etq-total" id="otro-etq"></div>
       <div class="total mediano" id="otro-total"></div>
       <div class="otro-linea" id="otro-linea"></div>
+      <button class="objetivo" id="obj-analisis" type="button" hidden></button>
     </div>
   </header>
 
@@ -712,7 +725,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.9.1';
+  var VERSION = '4.10';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1265,6 +1278,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     est.pestana = p;
     window.scrollTo(0, 0);
     if (est.datos) pintar();
+    // Si el iPhone dejó la app encogida (la barra de abajo subida), al cambiar de pestaña se recoloca.
+    curarAlto();
   }
   // Abre Movimientos con lo que se mira en el resumen (tu parte, la conjunta o todo) y, si toca, un filtro.
   function verMovimientos(filtro, cuenta) {
@@ -1302,6 +1317,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     porTodas($('vistas').children, function (b) { b.classList.toggle('activa', b.getAttribute('data-vista') === est.vista); });
     $('billete-resumen').hidden = p !== 'inicio';
     $('billete-otro').hidden = p === 'inicio';
+    $('obj-analisis').hidden = p !== 'analisis';
     if (p === 'inicio') pintarInicio(d);
     else if (p === 'analisis') pintarAnalisis(d);
     else if (p === 'fijos') pintarFijos();
@@ -1314,7 +1330,10 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var esteMes = est.mes === mesDeHoy();
     $('total-etq').textContent = etiquetaTotal(esteMes);
     pintarCifra($('total'), d.total);
-    pintarRitmo(d, esteMes);
+    var conObjetivo = pintarObjetivo($('obj-inicio'), d, esteMes);
+    // En la conjunta y en «Todo», una línea que dice qué se ve, mientras no haya objetivo.
+    $('sin-pres').textContent = conObjetivo || est.vista === 'mio' ? ''
+      : est.vista === 'conjunta' ? 'Lo que pagáis los dos desde la cuenta conjunta.' : 'Tus gastos y los de la cuenta conjunta, juntos.';
     pintarChipsBillete(d, esteMes);
     var sinCat = d.gastos.filter(function (g) { return g.categoria === SIN; }).length;
     $('alerta').hidden = sinCat === 0;
@@ -1331,6 +1350,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var n = d.categorias.filter(function (c) { return c.gastado > 0; }).length;
     $('otro-linea').textContent = n ? (n === 1 ? 'En 1 categoría' : 'En ' + n + ' categorías') + ' · ' +
       (d.gastos.length === 1 ? '1 pago' : d.gastos.length + ' pagos') : 'Aún no hay gastos este mes';
+    pintarObjetivo($('obj-analisis'), d, est.mes === mesDeHoy());
     porTodas($('sub-analisis').children, function (b) {
       var activa = b.getAttribute('data-sub') === est.sub;
       b.classList.toggle('activa', activa);
@@ -1343,40 +1363,105 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     else pintarMeses(d);
   }
 
-  function pintarRitmo(d, esteMes) {
-    var ritmo = $('ritmo'), sinPres = $('sin-pres');
-    ritmo.hidden = true;
-    sinPres.textContent = '';
-    if (est.vista === 'mio' && d.presupuesto > 0) {
-      ritmo.hidden = false;
-      var queda = d.presupuesto - d.total;
-      ritmo.classList.toggle('pasado', queda < 0);
-      $('ritmo-barra').style.width = limitar(d.total / d.presupuesto * 100) + '%';
-      $('ritmo-pres').textContent = 'de ' + euros(d.presupuesto);
-      var q = $('ritmo-queda');
-      q.textContent = '';
-      q.appendChild(document.createTextNode(queda < 0 ? 'te has pasado ' : 'te quedan '));
-      q.appendChild(el('b', '', euros(Math.abs(queda))));
-      var marca = $('ritmo-hoy'), consejo = $('ritmo-consejo');
-      if (esteMes) {
-        var p = est.mes.split('-'), dias = new Date(+p[0], +p[1], 0).getDate(), hoy = new Date().getDate();
-        var toca = d.presupuesto * hoy / dias, dif = d.total - toca;
-        marca.hidden = false;
-        marca.style.left = limitar(hoy / dias * 100) + '%';
-        marca.title = 'Lo que tocaría llevar hoy: ' + euros(toca);
-        consejo.hidden = false;
-        consejo.textContent = Math.abs(dif) < 1 ? 'La rayita es lo que tocaría llevar hoy: vas justo.'
+  // ── El objetivo del mes (lo pidió Alex el 26/11) ──
+  // Lo máximo que quiere gastar al mes, uno para cada vista (Mío, Conjunta y Todo). Vale para todos los meses y se guarda
+  // en el móvil, así que no hace falta tocar la hoja. Si no hay objetivo pero la hoja tiene presupuestos, se usan esos.
+  var GUARDADO_OBJETIVO = 'bycash-objetivo', misObjetivos = {};
+  try { misObjetivos = JSON.parse(window.localStorage.getItem(GUARDADO_OBJETIVO) || '{}') || {}; } catch (e) { misObjetivos = {}; }
+  function objetivoDe(v) { var n = +misObjetivos[v]; return isFinite(n) && n > 0 ? n : 0; }
+  function ponerObjetivo(v, n) {
+    if (n > 0) misObjetivos[v] = n; else delete misObjetivos[v];
+    try { window.localStorage.setItem(GUARDADO_OBJETIVO, JSON.stringify(misObjetivos)); } catch (e) { return; }
+  }
+  var formatoRedondo = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  function eurosRedondo(n) { return Math.round(n) === n ? formatoRedondo.format(n) : euros(n); }
+  // «800», «800,50», «1.200» o «1.200,50 €» → número. Si no se entiende, 0.
+  function leerCifra(t) {
+    var s = String(t || '').replace(/[€\s]/g, '');
+    if (!/^\d[\d.,]*$/.test(s)) return 0;
+    if (s.indexOf(',') >= 0) s = s.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+    var n = parseFloat(s);
+    return isFinite(n) && n > 0 && n < 1e7 ? Math.round(n * 100) / 100 : 0;
+  }
+  // Pinta el objetivo en el billete: la barra con lo gastado (la rayita es lo que tocaría llevar hoy) y lo que queda,
+  // en verde si vas por debajo y en rojo si te has pasado. Sin objetivo, un botón para ponerlo. Devuelve si hay objetivo.
+  function pintarObjetivo(caja, d, esteMes) {
+    var meta = objetivoDe(est.vista), dePresupuesto = false;
+    if (!meta && est.vista === 'mio' && d.presupuesto > 0) { meta = d.presupuesto; dePresupuesto = true; }
+    caja.textContent = '';
+    caja.className = 'objetivo';
+    caja.onclick = abrirObjetivo;
+    if (!meta) {
+      caja.classList.add('vacio');
+      caja.setAttribute('aria-label', 'Ponte un objetivo de gasto al mes');
+      caja.appendChild(el('span', '', '🎯 Ponte un objetivo de gasto al mes'));
+      caja.appendChild(el('span', 'ir', '›'));
+      return false;
+    }
+    var queda = meta - d.total, pasado = queda < -0.005;
+    caja.classList.add(pasado ? 'pasado' : 'bien');
+    var pista = el('span', 'pista'), barra = el('i');
+    barra.style.width = limitar(d.total / meta * 100) + '%';
+    pista.appendChild(barra);
+    var consejo = '';
+    if (esteMes) {
+      var p = est.mes.split('-'), dias = new Date(+p[0], +p[1], 0).getDate(), hoy = new Date().getDate();
+      var toca = meta * hoy / dias, dif = d.total - toca, marca = el('span', 'marca-hoy');
+      marca.style.left = limitar(hoy / dias * 100) + '%';
+      pista.appendChild(marca);
+      if (!pasado) {
+        consejo = Math.abs(dif) < 1 ? 'La rayita es lo que tocaría llevar hoy: vas justo.'
           : dif < 0 ? 'La rayita es lo que tocaría llevar hoy: vas ' + euros(-dif) + ' por debajo. ¡Bien!'
             : 'La rayita es lo que tocaría llevar hoy: vas ' + euros(dif) + ' por encima.';
-      } else {
-        marca.hidden = true;
-        consejo.hidden = true;
       }
-    } else if (est.vista === 'mio') {
-      sinPres.textContent = 'Pon un presupuesto en la pestaña Categorías de la hoja y verás cuánto te queda.';
-    } else {
-      sinPres.textContent = est.vista === 'conjunta' ? 'Lo que pagáis los dos desde la cuenta conjunta.' : 'Tus gastos y los de la cuenta conjunta, juntos.';
     }
+    caja.appendChild(pista);
+    var texto = el('span', 'obj-texto'), metaTxt = el('span', 'obj-meta'), estado = el('span', 'obj-estado');
+    metaTxt.appendChild(document.createTextNode(dePresupuesto ? '🎯 Presupuesto' : '🎯 Objetivo'));
+    metaTxt.appendChild(el('b', '', eurosRedondo(meta)));
+    metaTxt.insertAdjacentHTML('beforeend', svg('editar', 14));
+    var dice = pasado ? (esteMes ? 'te has pasado ' : 'te pasaste ') : (esteMes ? 'te quedan ' : 'te sobraron ');
+    estado.appendChild(document.createTextNode(dice));
+    estado.appendChild(el('b', '', euros(Math.abs(queda))));
+    texto.appendChild(metaTxt);
+    texto.appendChild(estado);
+    caja.appendChild(texto);
+    if (consejo) caja.appendChild(el('span', 'ritmo-consejo', consejo));
+    caja.setAttribute('aria-label', 'Objetivo ' + eurosRedondo(meta) + ': ' + dice + euros(Math.abs(queda)) + '. Toca para cambiarlo.');
+    return true;
+  }
+  function abrirObjetivo() {
+    var v = est.vista, actual = objetivoDe(v);
+    abrirHoja(function (c) {
+      c.appendChild(el('h3', '', actual ? 'Tu objetivo del mes' : 'Ponte un objetivo'));
+      c.appendChild(el('p', 'datos', v === 'conjunta' ? 'Lo máximo que queréis gastar cada mes con la cuenta conjunta.'
+        : v === 'todo' ? 'Lo máximo que quieres gastar cada mes, contando la conjunta.' : 'Lo máximo que quieres gastar cada mes.'));
+      var imp = campoTexto(c, '¿Cuánto, como mucho?', true);
+      imp.placeholder = '0 €';
+      imp.setAttribute('enterkeyhint', 'done');
+      if (actual) imp.value = Math.round(actual) === actual ? String(actual) : coma(actual);
+      c.appendChild(el('p', 'ayuda', 'Lo verás en verde mientras vayas por debajo y en rojo si te pasas. Vale para todos los meses y se guarda en este móvil.'));
+      var guardar = el('button', 'principal', 'Guardar');
+      guardar.type = 'button';
+      guardar.onclick = function () {
+        var n = leerCifra(imp.value);
+        if (!n) { imp.focus(); avisar('Escribe una cifra, por ejemplo 800'); return; }
+        ponerObjetivo(v, n);
+        cerrarHoja();
+        pintar();
+        avisar('Objetivo: ' + eurosRedondo(n) + ' al mes');
+      };
+      imp.addEventListener('keydown', function (e) { if (e.key === 'Enter') guardar.onclick(); });
+      c.appendChild(guardar);
+      if (actual) {
+        var quitar = el('button', 'peligro-b', 'Quitar el objetivo');
+        quitar.type = 'button';
+        quitar.onclick = function () { ponerObjetivo(v, 0); cerrarHoja(); pintar(); avisar('Objetivo quitado'); };
+        c.appendChild(quitar);
+      }
+      setTimeout(function () { imp.focus(); }, 280);
+    });
   }
 
   function pintarChipsBillete(d, esteMes) {
@@ -2509,16 +2594,41 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   }
 
   // ── El guilloché del billete ──
+  // Las rayas pasan por detrás de lo que va encima del billete (Mío · Conjunta · Todo, los botones y las flechas):
+  // donde hay uno, se borran, para que no se vean a través de su fondo de cristal (lo pidió Alex el 26/11).
+  // También la barra del objetivo, su botón y las pastillas de abajo, que tienen el mismo fondo de cristal.
+  var TAPAN_GUILLOCHE = '#vistas, #recargar, #mas, #anterior, #siguiente, .objetivo .pista, .objetivo.vacio, .chip-b';
+  function huecosGuilloche(caja) {
+    var base = caja.getBoundingClientRect(), lista = [];
+    porTodas(caja.querySelectorAll(TAPAN_GUILLOCHE), function (e) {
+      if (!e.getClientRects().length) return;
+      var r = e.getBoundingClientRect();
+      lista.push([Math.round(r.left - base.left), Math.round(r.top - base.top), Math.round(r.width), Math.round(r.height),
+        parseFloat(getComputedStyle(e).borderTopLeftRadius) || 0]);
+    });
+    return lista;
+  }
+  function rectanguloRedondo(cx, x, y, w, h, radio) {
+    var k = Math.max(0, Math.min(radio, w / 2, h / 2));
+    cx.beginPath();
+    cx.moveTo(x + k, y);
+    cx.arcTo(x + w, y, x + w, y + h, k);
+    cx.arcTo(x + w, y + h, x, y + h, k);
+    cx.arcTo(x, y + h, x, y, k);
+    cx.arcTo(x, y, x + w, y, k);
+    cx.closePath();
+  }
   function dibujarGuilloche() {
     var lienzo = $('guilloche'), caja = $('billete');
     var w = caja.clientWidth, h = caja.clientHeight;
     if (!w || !h || !lienzo.getContext) return;
-    if (lienzo._w === w && lienzo._h === h && lienzo._color === colorGuilloche()) return;
+    var huecos = huecosGuilloche(caja), firma = JSON.stringify(huecos);
+    if (lienzo._w === w && lienzo._h === h && lienzo._color === colorGuilloche() && lienzo._huecos === firma) return;
     var r = window.devicePixelRatio || 1, cx = lienzo.getContext('2d');
     if (!cx) return;
     lienzo.width = Math.round(w * r);
     lienzo.height = Math.round(h * r);
-    lienzo._w = w; lienzo._h = h; lienzo._color = colorGuilloche();
+    lienzo._w = w; lienzo._h = h; lienzo._color = colorGuilloche(); lienzo._huecos = firma;
     cx.setTransform(r, 0, 0, r, 0, 0);
     cx.clearRect(0, 0, w, h);
     cx.strokeStyle = lienzo._color;
@@ -2541,6 +2651,10 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       if (t === 0) cx.moveTo(px, py); else cx.lineTo(px, py);
     }
     cx.stroke();
+    cx.globalCompositeOperation = 'destination-out';
+    cx.fillStyle = '#000';
+    huecos.forEach(function (o) { rectanguloRedondo(cx, o[0], o[1], o[2], o[3], o[4]); cx.fill(); });
+    cx.globalCompositeOperation = 'source-over';
   }
   function colorGuilloche() {
     return getComputedStyle(document.documentElement).getPropertyValue('--guilloche').trim() || 'rgba(255,255,255,.2)';
@@ -2711,20 +2825,28 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var vertical = window.screen && window.screen.height > window.screen.width && window.innerWidth === window.screen.width;
     return vertical ? Math.max(a, window.screen.height) : a;
   }
+  // Desde la 4.10 se vuelve a medir la página entera (body), que ahora mide como mínimo lo que la pantalla, y no solo
+  // la app: con poco contenido (Fijos) la app no llegaba abajo y el iPhone no se recolocaba.
   function curarAlto() {
     if (window.navigator.standalone !== true || esCampo(document.activeElement)) return;
     var falta = altoBueno() - window.innerHeight;
     if (falta <= 4 || falta > 200) return;
-    var y = window.scrollY;
-    [$('app'), $('medida')].forEach(function (e) {
-      e.style.display = 'none';
-      void e.offsetHeight;
-      e.style.display = '';
-    });
+    var y = window.scrollY, cuerpo = document.body;
+    cuerpo.style.display = 'none';
+    void cuerpo.offsetHeight;
+    cuerpo.style.display = '';
     window.scrollTo(window.scrollX, y);
     programarAjuste();
   }
+  // Cuando la parte visible deja de cambiar (el teclado ya se ha ido), se mira otra vez si falta altura.
+  var curaPendiente;
+  function programarCura() {
+    clearTimeout(curaPendiente);
+    curaPendiente = setTimeout(curarAlto, 280);
+  }
   window.addEventListener('resize', anotarAlto);
+  window.addEventListener('resize', programarCura);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', programarCura);
   PESTANAS.forEach(function (n) {
     $('pagina-' + n).addEventListener('animationend', function () { this.classList.remove('entra'); });
   });
@@ -2806,6 +2928,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   $('alerta').onclick = function () { verMovimientos({ campo: 'categoria', valor: SIN }); };
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { cerrarHoja(); cerrarMenu(); } });
   window.addEventListener('resize', function () { if (!$('app').hidden) dibujarGuilloche(); });
+  // Cuando llegan las letras, los botones pueden moverse un poco: se recolocan los huecos del sello.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!$('app').hidden) dibujarGuilloche(); });
   if (window.matchMedia) {
     var oscuro = window.matchMedia('(prefers-color-scheme: dark)');
     var alCambiar = function () { if (!$('app').hidden) dibujarGuilloche(); };
