@@ -391,20 +391,42 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .lista-dia { padding: 4px 16px; margin-bottom: 6px; }
 
 /* ── Barra de pestañas ── */
-/* Pegada abajo del todo, de lado a lado, como la de las apps del iPhone (lo pidió Alex el 26/11). Los iconos quedan
-   justo encima de la rayita de inicio del iPhone; en pantallas anchas, centrados en 520 px como la app. */
+/* «Liquid glass», como la del iPhone (iOS 26) o Instagram (lo pidió Alex el 26/11): una cápsula de cristal que flota
+   a la misma altura que la barra de antes (los iconos, justo encima de la rayita de inicio), deja ver lo de detrás
+   desenfocado y lleva un brillo fino en el borde. La pestaña elegida tiene una pastilla de cristal más clara.
+   Safari no deja doblar lo de detrás como hace Apple, así que se imita con desenfoque, saturación y brillos. */
 .pestanas {
-  --abajo: max(6px, env(safe-area-inset-bottom, 0px) - 10px);
-  --lado: max(8px, calc((100% - 520px) / 2));
-  position: fixed; z-index: 8; left: 0; right: 0; bottom: var(--fijo-abajo, 0px);
-  height: calc(58px + var(--abajo)); padding: 0 max(var(--lado), env(safe-area-inset-right, 0px)) var(--abajo) max(var(--lado), env(safe-area-inset-left, 0px));
-  background: var(--cristal); -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
-  border-top: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(8, 12, 40, .06);
-  display: grid; grid-template-columns: 1fr 1fr 74px 1fr 1fr; align-items: center;
+  --vidrio: rgba(255, 255, 255, .58); --vidrio-borde: rgba(255, 255, 255, .78); --vidrio-brillo: rgba(255, 255, 255, .95);
+  --vidrio-activo: rgba(16, 22, 58, .07); --vidrio-sombra: rgba(8, 12, 40, .18);
+  position: fixed; z-index: 8; left: 50%; transform: translateX(-50%);
+  bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + var(--fijo-abajo, 0px));
+  width: min(calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)), 460px); height: 62px;
+  padding: 0 6px; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 60%), var(--vidrio);
+  -webkit-backdrop-filter: blur(14px) saturate(1.9) brightness(1.04); backdrop-filter: blur(14px) saturate(1.9) brightness(1.04);
+  border: 1px solid var(--vidrio-borde);
+  box-shadow: inset 0 1px 1px var(--vidrio-brillo), inset 0 -1px 1px rgba(255, 255, 255, .1), 0 12px 32px var(--vidrio-sombra), 0 1px 3px rgba(0, 0, 0, .08);
+  display: grid; grid-template-columns: 1fr 1fr 64px 1fr 1fr; align-items: center;
 }
-.pestana { height: 100%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 650; color: var(--muted); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pestanas {
+    --vidrio: rgba(30, 30, 36, .48); --vidrio-borde: rgba(255, 255, 255, .12); --vidrio-brillo: rgba(255, 255, 255, .26);
+    --vidrio-activo: rgba(255, 255, 255, .12); --vidrio-sombra: rgba(0, 0, 0, .45);
+  }
+}
+:root[data-theme="dark"] .pestanas {
+  --vidrio: rgba(30, 30, 36, .48); --vidrio-borde: rgba(255, 255, 255, .12); --vidrio-brillo: rgba(255, 255, 255, .26);
+  --vidrio-activo: rgba(255, 255, 255, .12); --vidrio-sombra: rgba(0, 0, 0, .45);
+}
+.pestana { position: relative; isolation: isolate; height: calc(100% - 10px); min-width: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 650; color: var(--muted); transition: color .2s; }
 .pestana.activa { color: var(--accent-texto); }
-.mas-gordo { justify-self: center; width: 60px; height: 60px; border-radius: 21px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); transform: translateY(-16px); box-shadow: 0 12px 26px var(--acento-sombra); transition: transform .15s; }
+.pestana.activa::before { content: ""; position: absolute; inset: 0 -2px; z-index: -1; border-radius: inherit; background: var(--vidrio-activo); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14); }
+/* El «+», una gota del color de la app dentro de la cápsula, con su brillo arriba. */
+.mas-gordo {
+  justify-self: center; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--accent-ink);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 55%), var(--accent);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .6), inset 0 -2px 4px rgba(0, 0, 0, .12), 0 6px 16px var(--acento-sombra); transition: transform .15s;
+}
 
 /* ── El círculo de colores ── */
 .pie-colores { display: flex; justify-content: center; margin: 8px 0 4px; }
@@ -417,7 +439,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .muestra.activa { color: var(--ink); }
 .muestra.activa i { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--ink); }
 .muestra:active i { transform: scale(.92); }
-.mas-gordo:active { transform: translateY(-16px) scale(.93); }
+.mas-gordo:active { transform: scale(.92); }
 
 /* ── Menú al mantener pulsado ── */
 .capa-menu { position: fixed; inset: 0; z-index: 40; }
@@ -725,7 +747,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.12';
+  var VERSION = '4.13';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
