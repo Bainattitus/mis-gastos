@@ -725,7 +725,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.11';
+  var VERSION = '4.12';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1502,9 +1502,12 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   function pintarChipsBillete(d, esteMes) {
     var cont = $('chips-billete');
     cont.textContent = '';
-    if (d.anterior && d.anterior.total > 0) {
+    // Comparación con el mes anterior. Si aquel mes casi no tiene gastos apuntados (menos de 20 €, como octubre de 2026,
+    // cuando Alex empezaba), no se compara: salían cosas como «21278 % más». Si es el doble o más, se dice en euros.
+    if (d.anterior && d.anterior.total >= 20) {
       var dif = d.total / d.anterior.total - 1, sube = dif > 0;
-      var txt = Math.abs(dif) < 0.005 ? '= Igual que ' : (sube ? '▲ ' : '▼ ') + Math.round(Math.abs(dif) * 100) + ' % ' + (sube ? 'más que ' : 'menos que ');
+      var cuanto = Math.abs(dif) >= 1 ? eurosRedondo(Math.round(Math.abs(d.total - d.anterior.total))) : Math.round(Math.abs(dif) * 100) + ' %';
+      var txt = Math.abs(dif) < 0.005 ? '= Igual que ' : (sube ? '▲ ' : '▼ ') + cuanto + (sube ? ' más que ' : ' menos que ');
       cont.appendChild(el('span', 'chip-b', txt + d.anterior.nombre + (esteMes ? ' a estas alturas' : '')));
     }
     if (d.ingresos.total > 0) {
