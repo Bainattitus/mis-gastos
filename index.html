@@ -725,7 +725,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.10';
+  var VERSION = '4.11';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -833,7 +833,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     cambiarFijo: function (fila, concepto, importe) { return llamar('cambiarFijo', [fila, concepto, importe]); },
     dejarFijo: function (fila, concepto) { return llamar('dejarFijo', [fila, concepto]); },
     editar: function (id, cambios) { return llamar('editar', [id, cambios]); },
-    crearCategoria: function (nombre, emoji) { return llamar('crearCategoria', [nombre, emoji]); }
+    crearCategoria: function (nombre, emoji) { return llamar('crearCategoria', [nombre, emoji]); },
+    guardarObjetivo: function (vista, importe) { return llamar('guardarObjetivo', [vista, importe]); }
   };
 
   var est = {
@@ -1246,12 +1247,14 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     // Solo se atenúa si lo que se ve es de otro mes y aún no hay nada del nuevo.
     $('app').classList.toggle('cargando', !!est.datos && est.datos.mes !== mes);
     $('recargar').classList.add('girando');
+    var pedidoEn = Date.now();
     return API.datos(mes).then(function (d) {
       if (n !== cargaActual) return;
       if (!d || !d.ok) throw new Error((d && d.error) || 'sin datos');
+      var objetivosNuevos = sincronizarObjetivos(d, pedidoEn);
       var igual = est.datos && est.datos.mes === mes && JSON.stringify(est.datos) === JSON.stringify(d);
       guardarDatos(mes, d);
-      if (igual || est.mes !== mes) return;
+      if ((igual && !objetivosNuevos) || est.mes !== mes) return;
       est.datos = d;
       asignarColores();
       pintar();
@@ -1364,14 +1367,45 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   }
 
   // ── El objetivo del mes (lo pidió Alex el 26/11) ──
-  // Lo máximo que quiere gastar al mes, uno para cada vista (Mío, Conjunta y Todo). Vale para todos los meses y se guarda
-  // en el móvil, así que no hace falta tocar la hoja. Si no hay objetivo pero la hoja tiene presupuestos, se usan esos.
-  var GUARDADO_OBJETIVO = 'bycash-objetivo', misObjetivos = {};
+  // Lo máximo que quiere gastar al mes, uno para cada vista (Mío, Conjunta y Todo), que vale para todos los meses.
+  // Desde la 4.11 vive en la hoja (Config B9 a B11, con el código 3.2): no se pierde al borrar el icono y cada persona
+  // tiene el suyo en su hoja. En el móvil queda una copia para enseñarlo al momento; con una hoja vieja, solo ahí.
+  // Si no hay objetivo pero la hoja tiene presupuestos, se usan esos.
+  var GUARDADO_OBJETIVO = 'bycash-objetivo', SUBIDO_OBJETIVO = 'bycash-objetivo-en-hoja', VISTAS_OBJETIVO = ['mio', 'conjunta', 'todo'];
+  var misObjetivos = {}, hojaConObjetivos = false, escribiendoObjetivo = 0, objetivoEscritoEn = 0;
   try { misObjetivos = JSON.parse(window.localStorage.getItem(GUARDADO_OBJETIVO) || '{}') || {}; } catch (e) { misObjetivos = {}; }
   function objetivoDe(v) { var n = +misObjetivos[v]; return isFinite(n) && n > 0 ? n : 0; }
-  function ponerObjetivo(v, n) {
+  function ponerObjetivoMovil(v, n) {
     if (n > 0) misObjetivos[v] = n; else delete misObjetivos[v];
     try { window.localStorage.setItem(GUARDADO_OBJETIVO, JSON.stringify(misObjetivos)); } catch (e) { return; }
+  }
+  function escribirObjetivoHoja(v, n, callado) {
+    if (!hojaConObjetivos) return;
+    escribiendoObjetivo++;
+    API.guardarObjetivo(v, n)
+      .then(function (r) { if (esError(r)) throw new Error(r); })
+      .catch(function () { if (!callado) avisar('No se pudo guardar en la hoja. Inténtalo otra vez.'); })
+      .then(function () { escribiendoObjetivo--; objetivoEscritoEn = Date.now(); });
+  }
+  function ponerObjetivo(v, n) {
+    ponerObjetivoMovil(v, n);
+    escribirObjetivoHoja(v, n, false);
+  }
+  // Con lo que llega de la hoja: lo de la hoja manda. La primera vez que se conecta con una hoja que ya los guarda,
+  // los que solo estaban en el móvil se suben. Si se está guardando uno, o la petición salió antes, no se toca nada.
+  // Devuelve si ha cambiado alguno.
+  function sincronizarObjetivos(d, pedidoEn) {
+    hojaConObjetivos = !!(d.objetivos && typeof d.objetivos === 'object');
+    if (!hojaConObjetivos || escribiendoObjetivo || pedidoEn < objetivoEscritoEn) return false;
+    var cual = (conexion && conexion.u) || 'prueba', subidos = false, cambio = false;
+    try { subidos = window.localStorage.getItem(SUBIDO_OBJETIVO) === cual; } catch (e) { subidos = false; }
+    VISTAS_OBJETIVO.forEach(function (v) {
+      var enHoja = +d.objetivos[v] > 0 ? +d.objetivos[v] : 0, enMovil = objetivoDe(v);
+      if (!subidos && enMovil && !enHoja) { escribirObjetivoHoja(v, enMovil, true); return; }
+      if (enHoja !== enMovil) { ponerObjetivoMovil(v, enHoja); cambio = true; }
+    });
+    try { window.localStorage.setItem(SUBIDO_OBJETIVO, cual); } catch (e) { return cambio; }
+    return cambio;
   }
   var formatoRedondo = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
   function eurosRedondo(n) { return Math.round(n) === n ? formatoRedondo.format(n) : euros(n); }
@@ -1441,7 +1475,8 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       imp.placeholder = '0 €';
       imp.setAttribute('enterkeyhint', 'done');
       if (actual) imp.value = Math.round(actual) === actual ? String(actual) : coma(actual);
-      c.appendChild(el('p', 'ayuda', 'Lo verás en verde mientras vayas por debajo y en rojo si te pasas. Vale para todos los meses y se guarda en este móvil.'));
+      c.appendChild(el('p', 'ayuda', 'Lo verás en verde mientras vayas por debajo y en rojo si te pasas. Vale para todos los meses' +
+        (hojaConObjetivos ? ' y se guarda en tu hoja, en la pestaña Config.' : '. Se guarda en este móvil hasta que pegues el código nuevo en tu hoja.')));
       var guardar = el('button', 'principal', 'Guardar');
       guardar.type = 'button';
       guardar.onclick = function () {
