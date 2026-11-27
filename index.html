@@ -23,6 +23,10 @@
     if (/^(amarillo|esmeralda|teja|ciruela|grafito)$/.test(color || '')) document.documentElement.setAttribute('data-color', color);
     if (modo === 'light' || modo === 'dark') document.documentElement.setAttribute('data-theme', modo);
   } catch (e) { /* sin memoria del navegador: colores de siempre */ }
+  // La entradilla no sale si la app se acaba de recargar sola por una versión nueva (ver buscarVersionNueva).
+  try {
+    if (Date.now() - (+sessionStorage.getItem('bycash-recarga') || 0) < 15000) document.documentElement.classList.add('sin-intro');
+  } catch (e) { /* sin memoria de la sesión: sale siempre */ }
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -398,6 +402,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .pestanas {
   --vidrio: rgba(255, 255, 255, .58); --vidrio-borde: rgba(255, 255, 255, .78); --vidrio-brillo: rgba(255, 255, 255, .95);
   --vidrio-activo: rgba(16, 22, 58, .07); --vidrio-sombra: rgba(8, 12, 40, .18);
+  --lente-alzada: rgba(255, 255, 255, .92); --lente-borde: rgba(16, 22, 58, .08); --lente-sombra: rgba(8, 12, 40, .24);
   position: fixed; z-index: 8; left: 50%; transform: translateX(-50%);
   bottom: calc(max(10px, env(safe-area-inset-bottom, 0px) - 12px) + var(--fijo-abajo, 0px));
   width: min(calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)), 460px); height: 62px;
@@ -407,22 +412,44 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   border: 1px solid var(--vidrio-borde);
   box-shadow: inset 0 1px 1px var(--vidrio-brillo), inset 0 -1px 1px rgba(255, 255, 255, .1), 0 12px 32px var(--vidrio-sombra), 0 1px 3px rgba(0, 0, 0, .08);
   display: grid; grid-template-columns: 1fr 1fr 64px 1fr 1fr; align-items: center;
+  /* El dedo arrastra la lente de lado a lado sin mover la página. */
+  touch-action: none;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .pestanas {
     --vidrio: rgba(30, 30, 36, .48); --vidrio-borde: rgba(255, 255, 255, .12); --vidrio-brillo: rgba(255, 255, 255, .26);
     --vidrio-activo: rgba(255, 255, 255, .12); --vidrio-sombra: rgba(0, 0, 0, .45);
+    --lente-alzada: rgba(255, 255, 255, .2); --lente-borde: rgba(255, 255, 255, .16); --lente-sombra: rgba(0, 0, 0, .5);
   }
 }
 :root[data-theme="dark"] .pestanas {
   --vidrio: rgba(30, 30, 36, .48); --vidrio-borde: rgba(255, 255, 255, .12); --vidrio-brillo: rgba(255, 255, 255, .26);
   --vidrio-activo: rgba(255, 255, 255, .12); --vidrio-sombra: rgba(0, 0, 0, .45);
+  --lente-alzada: rgba(255, 255, 255, .2); --lente-borde: rgba(255, 255, 255, .16); --lente-sombra: rgba(0, 0, 0, .5);
 }
-.pestana { position: relative; isolation: isolate; height: calc(100% - 10px); min-width: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 650; color: var(--muted); transition: color .2s; }
+.pestana { position: relative; z-index: 1; height: calc(100% - 10px); min-width: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 650; color: var(--muted); transition: color .2s; }
 .pestana.activa { color: var(--accent-texto); }
-.pestana.activa::before { content: ""; position: absolute; inset: 0 -2px; z-index: -1; border-radius: inherit; background: var(--vidrio-activo); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14); }
+.pestana svg { transition: transform .2s; }
+/* La lente: la pastilla de cristal de la pestaña elegida (ver ponerLente). Se desliza al cambiar de pestaña y, si se
+   arrastra el dedo por la barra, lo sigue más grande y más clara, como en el iPhone (lo pidió Alex el 27/11). */
+.lente {
+  position: absolute; z-index: 0; left: 0; top: 5px; bottom: 5px; width: var(--lente-ancho, 0px); border-radius: 999px; pointer-events: none;
+  background: var(--vidrio-activo); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
+  translate: var(--lente-x, 0px) 0;
+  transition: translate .5s cubic-bezier(.3, 1.3, .45, 1), scale .3s cubic-bezier(.3, 1.4, .5, 1), background-color .25s, box-shadow .25s;
+}
+.lente.quieta { transition: none; }
+.pestanas.arrastrando .lente {
+  scale: 1.1 1.16; background: var(--lente-alzada);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .9), inset 0 -1px 1px rgba(255, 255, 255, .3), 0 0 0 1px var(--lente-borde), 0 8px 22px var(--lente-sombra);
+  transition: translate .12s cubic-bezier(.2, .8, .3, 1), scale .3s cubic-bezier(.3, 1.4, .5, 1), background-color .25s, box-shadow .25s;
+}
+.pestanas.arrastrando .pestana { color: var(--muted); }
+.pestanas.arrastrando .pestana.encima { color: var(--accent-texto); }
+.pestanas.arrastrando .pestana.encima svg { transform: scale(1.12); }
 /* El «+», una gota del color de la app dentro de la cápsula, con su brillo arriba. */
 .mas-gordo {
+  position: relative; z-index: 1;
   justify-self: center; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--accent-ink);
   background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 55%), var(--accent);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .6), inset 0 -2px 4px rgba(0, 0, 0, .12), 0 6px 16px var(--acento-sombra); transition: transform .15s;
@@ -581,12 +608,48 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 .pagina.entra { animation: entrar .25s ease; }
 .medida { position: fixed; inset: 0; visibility: hidden; pointer-events: none; z-index: -1; }
 @keyframes entrar { from { transform: translateY(8px); } to { transform: none; } }
+
+/* ── La entradilla ── */
+/* Al abrir la app sale un momento el logo, como en las apps del iPhone (lo pidió Alex el 27/11): la B amarilla del icono
+   sobre su negro, con un brillo que la cruza, y luego se abre hacia la app, que mientras tanto ya se ha cargado detrás.
+   Dura algo más de un segundo y se va sola aunque falle el resto; un toque la quita antes (ver «La entradilla»). */
+.intro {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 204, 0, .13), rgba(255, 204, 0, 0) 42%), #111214;
+  animation: intro-fuera .35s cubic-bezier(.4, 0, .2, 1) .9s forwards;
+}
+.sin-intro .intro { display: none; }
+.intro.saltar { animation: intro-fuera .2s ease forwards; pointer-events: none; }
+.intro-logo { position: relative; width: 84px; aspect-ratio: 218 / 352; animation: intro-logo .6s cubic-bezier(.3, 1.45, .5, 1) both, intro-zoom .35s cubic-bezier(.4, 0, .2, 1) .9s forwards; }
+.intro-logo svg { display: block; width: 100%; height: 100%; color: #ffcc00; filter: drop-shadow(0 6px 22px rgba(255, 204, 0, .3)); }
+/* El brillo solo se ve dentro de la B: la máscara es la misma B. */
+.intro-brillo {
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, .9) 50%, rgba(255, 255, 255, 0) 62%) 125% 0 / 200% 100% no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 80 218 352'%3E%3Cpath fill-rule='evenodd' d='M166 126H290C333 126 362 152 362 192C362 219 348 239 326 248C354 257 372 281 372 313C372 357 340 386 292 386H166ZM222 172V228H282C298 228 308 217 308 200C308 183 298 172 282 172ZM222 270V340H286C305 340 316 327 316 305C316 283 305 270 286 270Z'/%3E%3Crect x='192' y='82' width='24' height='52' rx='4'/%3E%3Crect x='246' y='82' width='24' height='52' rx='4'/%3E%3Crect x='192' y='378' width='24' height='52' rx='4'/%3E%3Crect x='246' y='378' width='24' height='52' rx='4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 80 218 352'%3E%3Cpath fill-rule='evenodd' d='M166 126H290C333 126 362 152 362 192C362 219 348 239 326 248C354 257 372 281 372 313C372 357 340 386 292 386H166ZM222 172V228H282C298 228 308 217 308 200C308 183 298 172 282 172ZM222 270V340H286C305 340 316 327 316 305C316 283 305 270 286 270Z'/%3E%3Crect x='192' y='82' width='24' height='52' rx='4'/%3E%3Crect x='246' y='82' width='24' height='52' rx='4'/%3E%3Crect x='192' y='378' width='24' height='52' rx='4'/%3E%3Crect x='246' y='378' width='24' height='52' rx='4'/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: intro-brillo .6s ease-in-out .3s both;
+}
+.intro-nombre { font-family: var(--f-titulo); font-size: 30px; font-weight: 750; letter-spacing: -.02em; color: #fff; animation: intro-nombre .45s cubic-bezier(.2, .8, .2, 1) .15s both; }
+@keyframes intro-logo { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: none; } }
+@keyframes intro-zoom { to { transform: scale(1.18); } }
+@keyframes intro-nombre { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes intro-brillo { from { background-position: 125% 0; } to { background-position: -25% 0; } }
+@keyframes intro-fuera { to { opacity: 0; visibility: hidden; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation: none !important; }
 }
 </style>
 </head>
 <body>
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-logo">
+    <svg viewBox="160 80 218 352"><g fill="currentColor"><path fill-rule="evenodd" d="M166 126H290C333 126 362 152 362 192C362 219 348 239 326 248C354 257 372 281 372 313C372 357 340 386 292 386H166ZM222 172V228H282C298 228 308 217 308 200C308 183 298 172 282 172ZM222 270V340H286C305 340 316 327 316 305C316 283 305 270 286 270Z"/><rect x="192" y="82" width="24" height="52" rx="4"/><rect x="246" y="82" width="24" height="52" rx="4"/><rect x="192" y="378" width="24" height="52" rx="4"/><rect x="246" y="378" width="24" height="52" rx="4"/></g></svg>
+    <span class="intro-brillo"></span>
+  </div>
+  <div class="intro-nombre">ByCash</div>
+</div>
 <div class="barra-estado" aria-hidden="true"></div>
 <div class="conectar" id="conectar" hidden>
   <img class="logo" src="icono-180.png" alt="">
@@ -714,6 +777,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 </div>
 
 <nav class="pestanas" id="pestanas" hidden>
+  <span class="lente" id="lente" aria-hidden="true"></span>
   <button class="pestana" data-pestana="inicio">
     <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>
     <span>Inicio</span>
@@ -747,7 +811,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
 (function () {
   'use strict';
   // Súbela en cada cambio, aquí y en version.json: si la de la web es otra, la app se recarga sola (ver buscarVersionNueva).
-  var VERSION = '4.13';
+  var VERSION = '4.14';
   var SIN = 'Sin categoría';
   var GUARDADA = 'gastos-conexion';
   var SIN_AVISO = 'gastos-sin-aviso-instalar';
@@ -1302,9 +1366,103 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   function irAPestana(p) {
     est.pestana = p;
     window.scrollTo(0, 0);
-    if (est.datos) pintar();
+    if (est.datos) pintar(); else ponerLente(true);
     // Si el iPhone dejó la app encogida (la barra de abajo subida), al cambiar de pestaña se recoloca.
     curarAlto();
+  }
+  // Al tocar una pestaña o soltar la lente encima de ella.
+  function elegirPestana(b) {
+    var p = b.getAttribute('data-pestana');
+    if (p === 'movs' && est.pestana !== 'movs') {
+      est.filtro = null;
+      est.busqueda = '';
+      $('buscar').value = '';
+      est.cuentaMovs = 'todo';
+    }
+    irAPestana(p);
+  }
+
+  // ── La lente de la barra de pestañas ──
+  // La pastilla de cristal de la pestaña elegida. Al cambiar de pestaña se desliza hasta la nueva, y se puede arrastrar
+  // con el dedo de lado a lado, como en el iPhone: sigue al dedo y, al soltarla, elige la pestaña que tenga más cerca.
+  var lentePuesta = false;
+  function moverLente(x, ancho) {
+    var barra = $('pestanas');
+    barra.style.setProperty('--lente-x', x + 'px');
+    barra.style.setProperty('--lente-ancho', ancho + 'px');
+  }
+  // Sin «deslizar» (la primera vez, o al girar el móvil) se pone en su sitio sin animación.
+  function ponerLente(deslizar) {
+    var b = document.querySelector('.pestana[data-pestana="' + est.pestana + '"]'), lente = $('lente');
+    if (!b || !b.offsetWidth || $('pestanas').classList.contains('arrastrando')) return;
+    var quieta = !deslizar || !lentePuesta;
+    if (quieta) lente.classList.add('quieta');
+    moverLente(b.offsetLeft - 2, b.offsetWidth + 4);
+    if (quieta) { void lente.offsetWidth; lente.classList.remove('quieta'); }
+    lentePuesta = true;
+  }
+  function arrastrarLente() {
+    var barra = $('pestanas'), botones = [].slice.call(barra.querySelectorAll('.pestana'));
+    var puntero = null, x0 = 0, y0 = 0, xDedo = 0, arrastrando = false, soltadaEn = 0, reloj = null;
+    function centro(b) { return b.offsetLeft + b.offsetWidth / 2; }
+    // Dónde está el dedo dentro de la barra, sin pasar de la primera pestaña ni de la última.
+    function xDe(clientX) {
+      var x = clientX - barra.getBoundingClientRect().left - barra.clientLeft;
+      return Math.max(centro(botones[0]), Math.min(centro(botones[botones.length - 1]), x));
+    }
+    function cercana(x) {
+      return botones.reduce(function (a, b) { return Math.abs(centro(b) - x) < Math.abs(centro(a) - x) ? b : a; });
+    }
+    // La lente, levantada, se pone bajo el dedo y enciende la pestaña que tiene debajo.
+    function seguir() {
+      var x = xDe(xDedo), ancho = botones[0].offsetWidth + 4, encima = cercana(x);
+      moverLente(x - ancho / 2, ancho);
+      botones.forEach(function (b) { b.classList.toggle('encima', b === encima); });
+    }
+    function levantar() {
+      clearTimeout(reloj);
+      reloj = null;
+      arrastrando = true;
+      barra.classList.add('arrastrando');
+      try { barra.setPointerCapture(puntero); } catch (err) { /* Algunos navegadores no lo permiten: sigue igual. */ }
+      seguir();
+    }
+    function soltar(e, elegir) {
+      if (e.pointerId !== puntero) return;
+      clearTimeout(reloj);
+      reloj = null;
+      puntero = null;
+      if (!arrastrando) return;
+      arrastrando = false;
+      soltadaEn = Date.now();
+      barra.classList.remove('arrastrando');
+      botones.forEach(function (b) { b.classList.remove('encima'); });
+      var b = elegir ? cercana(xDe(e.clientX)) : null;
+      if (b && b.getAttribute('data-pestana') !== est.pestana) elegirPestana(b); else ponerLente(true);
+    }
+    barra.addEventListener('pointerdown', function (e) {
+      if (e.button || arrastrando) return;
+      puntero = e.pointerId; x0 = xDedo = e.clientX; y0 = e.clientY;
+      clearTimeout(reloj);
+      // Con el dedo quieto un momento en una pestaña, la lente también se levanta, como en el iPhone.
+      reloj = e.target.closest && e.target.closest('.pestana') ? setTimeout(levantar, 200) : null;
+    });
+    barra.addEventListener('pointermove', function (e) {
+      if (e.pointerId !== puntero) return;
+      xDedo = e.clientX;
+      if (arrastrando) { seguir(); return; }
+      var mx = Math.abs(e.clientX - x0), my = Math.abs(e.clientY - y0);
+      if (mx >= 8 && mx >= my) levantar();
+      else if (my > 10) { clearTimeout(reloj); reloj = null; }  // Hacia arriba o abajo: no es arrastrar ni mantener.
+    });
+    barra.addEventListener('pointerup', function (e) { soltar(e, true); });
+    barra.addEventListener('pointercancel', function (e) { soltar(e, false); });
+    // Si la barra pierde el dedo sin soltarlo, la lente vuelve. Lo que pierde un botón al pasarle el dedo a la barra no cuenta.
+    barra.addEventListener('lostpointercapture', function (e) { if (e.target === barra) soltar(e, false); });
+    // El toque con el que se suelta la lente no cuenta: ni abre el «+» ni elige otra pestaña.
+    barra.addEventListener('click', function (e) {
+      if (Date.now() - soltadaEn < 400) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
   }
   // Abre Movimientos con lo que se mira en el resumen (tu parte, la conjunta o todo) y, si toca, un filtro.
   function verMovimientos(filtro, cuenta) {
@@ -1348,6 +1506,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     else if (p === 'fijos') pintarFijos();
     else pintarMovimientos();
     dibujarGuilloche();
+    ponerLente(true);
   }
 
   // ── Inicio: el billete y lo último ──
@@ -2257,18 +2416,20 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     c.appendChild(e);
     return e;
   }
-  function botonGuardar(c, enviar, irAHoy) {
+  // «irA»: el mes que se enseña después de guardar (una función que da aaaa-mm). Sin él, se queda en el que está.
+  function botonGuardar(c, enviar, irA) {
     var b = el('button', 'principal', 'Guardar');
     b.onclick = function () {
       var promesa = enviar();
       if (!promesa) return;
       b.disabled = true;
       b.textContent = 'Guardando…';
+      var mes = irA ? irA() : '';
       promesa.then(function (r) {
         if (esError(r)) throw new Error(r);
         cerrarHoja();
         avisar(r);
-        if (irAHoy && est.mes !== mesDeHoy()) est.mes = mesDeHoy();
+        if (mes && est.mes !== mes) est.mes = mes;
         cargar(true);
       }).catch(function (e) {
         b.disabled = false;
@@ -2326,35 +2487,36 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     c.appendChild(el('label', 'campo', 'Cuenta'));
     c.appendChild(opciones(CUENTAS, cuenta, function (v) { cuenta = v; }));
     var repetir = inicial || '';
+    // El día. Si no se repite, cuándo fue: hasta hoy. Si se repite, cuándo lo cobran: desde el día 1 de este mes hasta
+    // dentro de un año, y si aún no ha llegado, se apunta solo ese día.
+    var dia = campoDia(c, function () { ayuda.textContent = textoRepetir(repetir, dia.valor()); });
     c.appendChild(el('label', 'campo', '¿Se repite?'));
-    c.appendChild(opciones(REPETIR, repetir, function (v) { repetir = v; ponerCobro(); }));
-    // Día en que lo cobran: desde el día 1 de este mes hasta dentro de un año. Si aún no ha llegado, se apunta solo ese día.
-    var hoy = new Date(), hoyTxt = fechaTexto(hoy);
-    var caja = el('div');
-    caja.appendChild(el('label', 'campo', '¿Cuándo te lo cobran?'));
-    var cobro = el('input', 'entrada fecha');
-    cobro.type = 'date';
-    cobro.value = hoyTxt;
-    cobro.min = fechaTexto(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
-    cobro.max = fechaTexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
-    caja.appendChild(cobro);
-    c.appendChild(caja);
+    c.appendChild(opciones(REPETIR, repetir, function (v) { repetir = v; ponerDia(); }));
     var ayuda = el('p', 'ayuda');
     c.appendChild(ayuda);
-    function diaCobro() { var v = cobro.value; return v && v >= cobro.min && v <= cobro.max ? v : hoyTxt; }
-    function ponerCobro() {
-      caja.hidden = !repetir;
-      ayuda.textContent = textoRepetir(repetir, diaCobro());
+    // Al cambiar «¿Se repite?», el día cambia de pregunta y de límites.
+    function ponerDia() {
+      var hoy = new Date();
+      if (repetir) {
+        dia.limites('¿Cuándo te lo cobran?', fechaTexto(new Date(hoy.getFullYear(), hoy.getMonth(), 1)),
+          fechaTexto(new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate())));
+      } else {
+        dia.limites('¿Cuándo fue?', '', fechaTexto(hoy));
+      }
+      ayuda.textContent = textoRepetir(repetir, dia.valor());
     }
-    cobro.oninput = cobro.onchange = ponerCobro;
-    ponerCobro();
+    ponerDia();
     botonGuardar(c, function () {
       if (!/\d/.test(imp.value)) { imp.focus(); avisar('Escribe cuánto has gastado'); return null; }
       if (repetir && !com.value.trim()) { com.focus(); avisar('Escribe dónde, por ejemplo Netflix'); return null; }
       var g = { importe: imp.value.trim(), comercio: com.value.trim(), categoria: cat, cuenta: cuenta, repetir: repetir };
-      if (repetir) g.fecha = diaCobro();
+      if (repetir) g.fecha = dia.valor();
+      else if (dia.otro()) {
+        if (!hojaConDias()) { avisar('Para apuntarlo otro día, falta pegar el código nuevo en tu hoja.'); return null; }
+        g.fecha = dia.valor();
+      }
       return API.apuntar(g);
-    }, true);
+    }, function () { return repetir ? mesDeHoy() : dia.valor().slice(0, 7); });
     setTimeout(function () { imp.focus(); }, 280);
   }
   function formIngreso(c) {
@@ -2364,12 +2526,48 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     var cat = '';
     c.appendChild(opciones(listaCategorias(['', '💶 Dinero que entra']), '', function (v) { cat = v; }));
     c.appendChild(el('p', 'ayuda', 'Si es lo que te devuelven de algo que pagaste, elige su categoría y se restará de ese gasto.'));
+    var dia = campoDia(c);
     botonGuardar(c, function () {
       if (!/\d/.test(imp.value)) { imp.focus(); avisar('Escribe cuánto te ha entrado'); return null; }
-      return API.apuntarIngreso({ importe: imp.value.trim(), de: de.value.trim(), tipo: cat ? DEVOLUCION : 'Ingreso', categoria: cat });
-    }, true);
+      var i = { importe: imp.value.trim(), de: de.value.trim(), tipo: cat ? DEVOLUCION : 'Ingreso', categoria: cat };
+      if (dia.otro()) {
+        if (!hojaConDias()) { avisar('Para apuntarlo otro día, falta pegar el código nuevo en tu hoja.'); return null; }
+        i.fecha = dia.valor();
+      }
+      return API.apuntarIngreso(i);
+    }, function () { return dia.valor().slice(0, 7); });
     setTimeout(function () { imp.focus(); }, 280);
   }
+  // Campo «¿Cuándo fue?», con calendario: hoy, salvo que se elija otro día entre min y max (aaaa-mm-dd; sin min, sin límite).
+  // El iPhone deja elegir fuera de los límites o borrar el día: entonces vuelve a hoy.
+  function campoDia(c, alCambiar) {
+    var etiqueta = el('label', 'campo', '¿Cuándo fue?');
+    var e = el('input', 'entrada fecha');
+    e.type = 'date';
+    e.value = e.max = fechaTexto(new Date());
+    c.appendChild(etiqueta);
+    c.appendChild(e);
+    function vale(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v) && (!e.min || v >= e.min) && (!e.max || v <= e.max); }
+    var campo = {
+      valor: function () { return vale(e.value) ? e.value : fechaTexto(new Date()); },
+      otro: function () { return campo.valor() !== fechaTexto(new Date()); },
+      limites: function (texto, min, max) {
+        etiqueta.textContent = texto;
+        e.min = min;
+        e.max = max;
+        e.value = campo.valor();
+      }
+    };
+    e.onchange = function () {
+      if (e.value && !vale(e.value)) avisar('Ese día no vale: queda hoy');
+      e.value = campo.valor();
+      if (alCambiar) alCambiar();
+    };
+    e.oninput = function () { if (alCambiar) alCambiar(); };
+    return campo;
+  }
+  // La hoja sabe apuntar con otro día desde su código 3.3, que manda «versionHoja».
+  function hojaConDias() { return !!(est.datos && est.datos.versionHoja); }
 
   function abrirEditar(x, esIngreso) {
     abrirHoja(function (c) {
@@ -2956,17 +3154,9 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
     };
   });
   porTodas(document.querySelectorAll('.pestana'), function (b) {
-    b.onclick = function () {
-      var p = b.getAttribute('data-pestana');
-      if (p === 'movs' && est.pestana !== 'movs') {
-        est.filtro = null;
-        est.busqueda = '';
-        $('buscar').value = '';
-        est.cuentaMovs = 'todo';
-      }
-      irAPestana(p);
-    };
+    b.onclick = function () { elegirPestana(b); };
   });
+  arrastrarLente();
   $('buscar').addEventListener('input', function () { est.busqueda = $('buscar').value; if (est.datos) pintarListaMovs(); });
   $('ver-todo').onclick = function () { verMovimientos(null); };
   $('anterior').onclick = function () { irAMes(moverMes(est.mes, -1)); };
@@ -2987,7 +3177,7 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
   $('cerrar-hoja').onclick = cerrarHoja;
   $('alerta').onclick = function () { verMovimientos({ campo: 'categoria', valor: SIN }); };
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { cerrarHoja(); cerrarMenu(); } });
-  window.addEventListener('resize', function () { if (!$('app').hidden) dibujarGuilloche(); });
+  window.addEventListener('resize', function () { if (!$('app').hidden) { dibujarGuilloche(); ponerLente(false); } });
   // Cuando llegan las letras, los botones pueden moverse un poco: se recolocan los huecos del sello.
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!$('app').hidden) dibujarGuilloche(); });
   if (window.matchMedia) {
@@ -3000,7 +3190,22 @@ h2 small { font-family: var(--f-texto); font-size: 13px; font-weight: 500; color
       .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-color'] });
   }
   $('mes-nombre').textContent = nombreMes(est.mes);
+  entradilla();
   if (conexion || window.API_PRUEBA) arrancar(); else mostrarConectar('');
+
+  // ── La entradilla ──
+  // Se va sola con su animación (en el CSS). Un toque la quita antes, y al acabar se borra. Si el móvil pide menos
+  // movimiento, no hay animación: se quita a los 0,7 s.
+  function entradilla() {
+    var intro = $('intro');
+    if (!intro) return;
+    function quitar() { if (intro.parentNode) intro.parentNode.removeChild(intro); }
+    if (document.documentElement.classList.contains('sin-intro')) { quitar(); return; }
+    var quieta = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    intro.addEventListener('animationend', function (e) { if (e.target === intro) quitar(); });
+    intro.addEventListener('pointerdown', function () { intro.classList.add('saltar'); setTimeout(quitar, 250); });
+    setTimeout(quitar, quieta ? 700 : 2500);
+  }
 })();
 </script>
 </body>
